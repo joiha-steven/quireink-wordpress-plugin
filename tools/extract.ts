@@ -19,7 +19,10 @@ import { join, dirname } from 'node:path'
 import { gzipSync } from 'node:zlib'
 import { $ } from 'bun'
 
-import { inkEmbedCss, resolveInks, DEFAULT_INKS, inkSignature, penSeed, INKS } from '@/pen'
+import {
+  inkHighlightCss, inkLinesCss, resolveInks, DEFAULT_INKS, inkSignature, penSeed, INKS,
+  type PenScope,
+} from '@/pen'
 
 const HERE = dirname(import.meta.dir)
 const QUIRE = join(HERE, '..', 'quireink')
@@ -40,8 +43,23 @@ const HEAD = `/*!
  */
 `
 
+// ONE sheet, two homes. `.pen` is the published embed scope and is what the front end gets.
+// `.editor-styles-wrapper` is the block editor's iframed canvas, and it is here because there
+// is NO supported way for a plugin to put a class on that iframe's body in WordPress 6.8:
+// `block_editor_iframed_body_class` does not exist, and a filter name written from memory is a
+// filter that silently does nothing. Measured in the editor: the mark computed to
+// rgb(255,255,0) with background-image:none, which is the browser's default <mark>.
+//
+// `:is()` and not two sheets, because two sheets is 534 KB twice. Not `:has()`, which is
+// forbidden here for what it does to WebKit.
+const EDITOR_SCOPE: PenScope = {
+  light: ':is(.pen, .editor-styles-wrapper)',
+  dark: '.dark :is(.pen, .editor-styles-wrapper)',
+  darkText: 'inherit',
+}
+
 const inks = resolveInks(DEFAULT_INKS)
-const body = inkEmbedCss(inks)
+const body = `${inkHighlightCss(inks, EDITOR_SCOPE)}\n${inkLinesCss(inks, EDITOR_SCOPE)}`
 
 // The sheet must be self-contained. It is linked by a plugin onto a page it does not own, so a
 // site-root URL resolves against WordPress's root and 404s silently: the stroke simply does not
@@ -67,8 +85,8 @@ const written = readFileSync(join(OUT, 'assets/css/quireink-pen.css'), 'utf8')
 if (/url\((['"]?)\/(?!\/)/.test(written)) {
   throw new Error('A site-root url() survived into the written sheet.')
 }
-if (!written.includes('.pen mark')) {
-  throw new Error('The written sheet has no `.pen mark` rule. The embed scope changed upstream.')
+if (!written.includes('.pen, .editor-styles-wrapper) mark')) {
+  throw new Error('The written sheet does not carry both scopes. The scope API changed upstream.')
 }
 
 const raw = Buffer.byteLength(css)

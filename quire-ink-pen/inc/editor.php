@@ -18,38 +18,49 @@ function quireink_pen_editor_assets() {
 	$dir = QUIREINK_PEN_URL . 'assets/';
 	$v   = QUIREINK_PEN_VERSION;
 
-	wp_enqueue_script( 'quireink-pen-seed', $dir . 'js/seed.js', array(), $v, true );
+	wp_enqueue_script( 'quireink-pen-seed', $dir . 'js/seed.js', array(), quireink_pen_asset_version( 'assets/js/seed.js' ), true );
 
 	wp_enqueue_script(
 		'quireink-pen-formats',
 		$dir . 'js/formats.js',
 		// Declared, not assumed. A missing `wp-rich-text` does not error, it just never
 		// registers the format, and the buttons are silently absent.
-		array( 'quireink-pen-seed', 'wp-rich-text', 'wp-block-editor', 'wp-element', 'wp-i18n' ),
-		$v,
+		array( 'quireink-pen-seed', 'wp-rich-text', 'wp-block-editor', 'wp-components', 'wp-element', 'wp-i18n' ),
+		quireink_pen_asset_version( 'assets/js/formats.js' ),
 		true
 	);
 
 	wp_set_script_translations( 'quireink-pen-formats', 'quire-ink-pen', QUIREINK_PEN_DIR . 'languages' );
 
-	wp_enqueue_style( 'quireink-pen-editor', $dir . 'css/quireink-pen.css', array(), $v );
 }
 add_action( 'enqueue_block_editor_assets', 'quireink_pen_editor_assets' );
 
 /**
- * The editor canvas needs the `pen` class too, or the sheet matches nothing while writing.
+ * The ink, inside the editor's canvas.
  *
- * The canvas is an iframe in WordPress 6.3 and later and does not inherit the admin body's
- * classes, so this is the supported way in rather than a workaround.
+ * ⚠️ NOT on `enqueue_block_editor_assets`. Since WordPress 6.3 the canvas is an IFRAME, and a
+ * stylesheet enqueued on that hook lands in the admin page OUTSIDE it, where it styles nothing.
+ * Measured in the editor before this was fixed: zero pen stylesheets inside the iframe, and a
+ * mark computing to `rgb(255,255,0)` with `background-image: none`, which is the browser's own
+ * default <mark>. Every guard was green.
  *
- * @param string[] $classes Body classes for the editor canvas.
- * @return string[]
+ * `enqueue_block_assets` is the hook that reaches the canvas. It also fires on the front end,
+ * where `inc/enqueue.php` already decides conditionally, so this half only runs in admin.
+ *
+ * The sheet needs no body class here: it is generated carrying `.editor-styles-wrapper`
+ * alongside `.pen`, because WordPress 6.8 gives a plugin no way to put a class on that iframe's
+ * body. `block_editor_iframed_body_class` does not exist; a filter name written from memory is
+ * a filter that silently does nothing.
  */
-function quireink_pen_editor_body_class( $classes ) {
-	$classes[] = 'pen';
-	if ( ! quireink_pen_theme_handles_context() && quireink_pen_is_dark() ) {
-		$classes[] = 'dark';
+function quireink_pen_canvas_style() {
+	if ( ! is_admin() ) {
+		return;
 	}
-	return $classes;
+	wp_enqueue_style(
+		'quireink-pen',
+		QUIREINK_PEN_URL . 'assets/css/quireink-pen.css',
+		array(),
+		quireink_pen_asset_version( 'assets/css/quireink-pen.css' )
+	);
 }
-add_filter( 'block_editor_iframed_body_class', 'quireink_pen_editor_body_class' );
+add_action( 'enqueue_block_assets', 'quireink_pen_canvas_style' );

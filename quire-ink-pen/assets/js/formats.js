@@ -2,10 +2,25 @@
  * The three gestures, as block editor formats.
  *
  * TWO format types, not three. `@wordpress/rich-text` resolves a format by tag name and class
- * name, so two types on a bare <mark> would shadow each other — and the ring IS a <mark>, by
- * the upstream contract (docs/decisions/0004). So one type owns <mark> and carries `data-form`
- * as an attribute, and two toolbar buttons apply it with different values. Nothing is added to
- * the markup to make the editor's life easier.
+ * name, so two types on a bare <mark> would shadow each other, and the ring IS a <mark> by the
+ * upstream contract (docs/decisions/0004). One type owns <mark> and carries `data-form` as an
+ * attribute; two buttons apply it with different values. Nothing is added to the markup to
+ * make the editor's life easier.
+ *
+ * ⚠️ A KEYBOARD SHORTCUT IS THE POINT. A toolbar button for a format lands in the toolbar's
+ * overflow menu, so marking a phrase costs select, open the chevron, choose: three actions for
+ * the one thing this plugin exists to do. `BlockControls` with `group: 'inline'` was tried and
+ * DOES NOT WORK from inside a format's edit - measured in WordPress 6.8, no button appears
+ * anywhere in the DOM, no console error, and the failing render silently took the shortcuts
+ * down with it. Format edits have no block edit context to fill that slot from.
+ *
+ * So: the button stays in the menu for discovery, and the shortcut is how it is actually used.
+ * `primaryShift` (Cmd/Ctrl+Shift) is the namespace core uses for its own format shortcuts,
+ * primaryShift+D strikethrough and primaryShift+X code. Measured in 6.8: primaryShift fires,
+ * `access` (Ctrl+Alt) does not.
+ *
+ * The titles all begin "Pen" because CORE ALREADY SHIPS A FORMAT CALLED "Highlight", and two
+ * entries reading Highlight in one menu is a bug report waiting to be filed.
  *
  * Plain script against the `wp.*` globals, deliberately: no build step is a build step nobody
  * has to document to a plugin reviewer, and this is small enough to stay that way.
@@ -14,11 +29,15 @@
 	'use strict';
 
 	var el = wp.element.createElement;
+	var Fragment = wp.element.Fragment;
 	var registerFormatType = wp.richText.registerFormatType;
 	var applyFormat = wp.richText.applyFormat;
 	var removeFormat = wp.richText.removeFormat;
+	var getActiveFormat = wp.richText.getActiveFormat;
 	var getTextContent = wp.richText.getTextContent;
 	var slice = wp.richText.slice;
+	var isCollapsed = wp.richText.isCollapsed;
+	var RichTextShortcut = wp.blockEditor.RichTextShortcut;
 	var ToolbarButton = wp.blockEditor.RichTextToolbarButton;
 	var __ = wp.i18n.__;
 
@@ -31,7 +50,7 @@
 	}
 
 	function isActive( value, name, form ) {
-		var active = wp.richText.getActiveFormat( value, name );
+		var active = getActiveFormat( value, name );
 		if ( ! active ) {
 			return false;
 		}
@@ -39,31 +58,46 @@
 		return form ? 'o' === attrs[ 'data-form' ] : 'o' !== attrs[ 'data-form' ];
 	}
 
-	function toggle( value, onChange, name, form ) {
+	function toggle( props, name, form ) {
+		var value = props.value;
 		if ( isActive( value, name, form ) ) {
-			onChange( removeFormat( value, name ) );
+			props.onChange( removeFormat( value, name ) );
+			return;
+		}
+		// Nothing selected means nothing to mark. Applying to a collapsed selection would
+		// leave an empty <mark> that draws a stroke over no words.
+		if ( isCollapsed( value ) ) {
 			return;
 		}
 		var attributes = { 'data-pen': seedFor( value ) };
 		if ( form ) {
 			attributes[ 'data-form' ] = form;
 		}
-		onChange( applyFormat( value, { type: name, attributes: attributes } ) );
+		props.onChange( applyFormat( value, { type: name, attributes: attributes } ) );
 	}
 
-	function button( props, name, form, title, icon ) {
-		return el( ToolbarButton, {
-			icon: icon,
-			title: title,
-			isActive: isActive( props.value, name, form ),
-			onClick: function () {
-				toggle( props.value, props.onChange, name, form );
-			},
-		} );
+	/** One gesture: the shortcut that is used, and the menu entry that makes it findable. */
+	function gesture( props, name, form, title, icon, character ) {
+		var onUse = function () {
+			toggle( props, name, form );
+		};
+		return el(
+			Fragment,
+			null,
+			el( RichTextShortcut, { type: 'primaryShift', character: character, onUse: onUse } ),
+			el( ToolbarButton, {
+				icon: icon,
+				title: title,
+				isActive: isActive( props.value, name, form ),
+				onClick: onUse,
+				shortcutType: 'primaryShift',
+				shortcutCharacter: character,
+			} )
+		);
 	}
 
 	registerFormatType( MARK, {
-		title: __( 'Highlight', 'quire-ink-pen' ),
+		title: __( 'Pen highlight', 'quire-ink-pen' ),
 		tagName: 'mark',
 		className: null,
 		attributes: {
@@ -73,10 +107,10 @@
 		},
 		edit: function ( props ) {
 			return el(
-				wp.element.Fragment,
+				Fragment,
 				null,
-				button( props, MARK, null, __( 'Highlight', 'quire-ink-pen' ), 'edit' ),
-				button( props, MARK, 'o', __( 'Ring', 'quire-ink-pen' ), 'marker' )
+				gesture( props, MARK, null, __( 'Pen highlight', 'quire-ink-pen' ), 'edit', 'h' ),
+				gesture( props, MARK, 'o', __( 'Pen ring', 'quire-ink-pen' ), 'marker', 'o' )
 			);
 		},
 	} );
@@ -90,7 +124,7 @@
 			'data-ink': 'data-ink',
 		},
 		edit: function ( props ) {
-			return button( props, UNDERLINE, null, __( 'Pen underline', 'quire-ink-pen' ), 'editor-underline' );
+			return gesture( props, UNDERLINE, null, __( 'Pen underline', 'quire-ink-pen' ), 'editor-underline', 'u' );
 		},
 	} );
 }( window.wp ) );

@@ -59,7 +59,7 @@ function quireink_pen_enqueue() {
 		'quireink-pen',
 		QUIREINK_PEN_URL . 'assets/css/quireink-pen.css',
 		array(),
-		QUIREINK_PEN_VERSION
+		quireink_pen_asset_version( 'assets/css/quireink-pen.css' )
 	);
 }
 add_action( 'wp_enqueue_scripts', 'quireink_pen_enqueue' );

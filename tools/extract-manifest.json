@@ -1,8 +1,8 @@
 {
   "generated_from": {
     "repo": "quireink",
-    "commit": "774fa071",
-    "describe": "v2.2.10-9-g774fa071"
+    "commit": "cb4dfdd3",
+    "describe": "v2.2.11"
   },
   "inks": {
     "names": [
@@ -16,8 +16,8 @@
   },
   "sheet": {
     "path": "quire-ink-pen/assets/css/quireink-pen.css",
-    "bytes": 534237,
-    "gzip": 34533
+    "bytes": 604910,
+    "gzip": 34906
   },
   "seed_probe": {
     "a": 60,
