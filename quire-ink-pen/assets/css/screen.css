@@ -112,3 +112,15 @@
 	border-left: 2px solid #c9c8c8;
 	color: #4a4a49;
 }
+
+.qi-notice strong { display: block; margin-bottom: 0.4rem; }
+.qi-notice p { margin: 0 0 0.5rem; }
+.qi-notice p:last-child { margin-bottom: 0; }
+
+/* A picture in the editor is a picture at its own pixel size otherwise, and a 512px icon then
+   fills the writing column. The engine constrains this in its own admin sheet, which is not
+   part of the toolbar subset brought across. */
+.qi-host > .ProseMirror img {
+	max-width: 100%;
+	height: auto;
+}

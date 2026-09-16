@@ -25,6 +25,10 @@
 	var savedMarkdown = cfg.markdown;
 	var saving = false;
 
+	function sprintf( template, value ) {
+		return template.replace( '%s', value );
+	}
+
 	function el( tag, attrs, kids ) {
 		var n = document.createElement( tag );
 		Object.keys( attrs || {} ).forEach( function ( k ) {
@@ -47,8 +51,22 @@
 		status, view, back, saveBtn,
 	] );
 
+	var atRisk = cfg.atRisk || [];
+	var needsConsent = cfg.state === 'new' && atRisk.length > 0;
+	var consented = ! needsConsent;
+
 	var notice = null;
-	if ( cfg.state === 'foreign' ) {
+	if ( needsConsent ) {
+		notice = el( 'div', { class: 'qi-notice qi-notice-warn' }, [
+			el( 'strong', { text: __( 'Saving here will replace this post\'s layout.', 'quire-ink-pen' ) } ),
+			el( 'p', { text: sprintf(
+				/* translators: %s: comma-separated list of block names. */
+				__( 'It was built in WordPress and uses: %s. Quire Ink writes Markdown, which holds words and not layout, so those blocks come in as plain text and saving would keep them that way.', 'quire-ink-pen' ),
+				atRisk.join( ', ' )
+			) } ),
+			el( 'p', { text: __( 'Reading and copying from here is safe. Nothing changes until you press Save.', 'quire-ink-pen' ) } ),
+		] );
+	} else if ( cfg.state === 'foreign' ) {
 		notice = el( 'div', { class: 'qi-notice qi-notice-warn', text: __(
 			'This post has been edited in WordPress since Quire Ink last saved it. What you see below is the older Quire Ink version. Saving will replace the newer one.',
 			'quire-ink-pen'
@@ -162,6 +180,18 @@
 	// ── saving ───────────────────────────────────────────────────────────────────────────
 	function save( force ) {
 		if ( saving ) { return; }
+
+		// The one place a post can lose its layout, so it is the one place that asks.
+		if ( ! consented ) {
+			if ( ! window.confirm(
+				__( 'This post uses blocks Markdown cannot hold:', 'quire-ink-pen' ) + '\n\n  ' + atRisk.join( '\n  ' )
+				+ '\n\n' + __( 'Saving replaces them with plain text, and that cannot be undone from here. Continue?', 'quire-ink-pen' )
+			) ) {
+				setStatus( __( 'Not saved', 'quire-ink-pen' ), 'warn' );
+				return;
+			}
+			consented = true;
+		}
 		saving = true;
 		saveBtn.disabled = true;
 		setStatus( __( 'Saving…', 'quire-ink-pen' ) );

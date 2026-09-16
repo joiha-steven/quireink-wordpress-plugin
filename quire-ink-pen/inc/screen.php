@@ -121,6 +121,8 @@ function quireink_pen_render_screen( $post ) {
 			// would show the author their own tags as text.
 			'html'     => '' !== $md ? '' : $post->post_content,
 			'state'    => $state,
+			// Named, not counted. "Some formatting may be lost" is a sentence nobody acts on.
+			'atRisk'   => '' !== $md ? array() : quireink_pen_blocks_at_risk( $post->post_content ),
 			'restUrl'  => rest_url( QUIREINK_PEN_REST_NS . '/post/' . $post->ID ),
 			'nonce'    => wp_create_nonce( 'wp_rest' ),
 			'backUrl'  => get_edit_post_link( $post->ID, 'raw' ),
