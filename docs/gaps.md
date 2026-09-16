@@ -34,6 +34,29 @@ The blog engine lets an owner retune the inks. That is 155 knobs of appearance m
 settings store, and none of it is a plugin's business. The plugin ships the engine's default
 five inks, and takes the theme's if the theme offers them.
 
+## Typing `==text==` does not become a mark
+
+Measured in WordPress 6.8.3, in a clean empty paragraph, typing the whole string in one go:
+
+```
+**bold** and _em_ and `code` and ==mark== end
+```
+
+**None of them converted.** All four stayed literal text. Core has no inline Markdown typing
+transform for a plugin to sit beside, and `__unstableInputRule` is in the bundle but is not a
+plugin-facing API.
+
+So the ceiling inside Gutenberg is a keyboard shortcut, and this plugin is at it:
+
+| Wanted | Available |
+|---|---|
+| a button in the main toolbar row | no. `BlockControls group="inline"` does not work from a format's edit |
+| `==text==` converting as you type | no. No inline input rule |
+| one keystroke | **yes**, and that is what ships |
+
+Below one keystroke means the blog engine's own editor, which is a different product decision
+and is tracked in the programme's open questions rather than here.
+
 ## Markdown is not here yet
 
 Track B. This plugin is the pen first. The engine's `src/md` is 4,513 lines and self-contained,
