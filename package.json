@@ -1,0 +1,19 @@
+{
+  "name": "quireink-wordpress-plugin",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "extract": "bun tools/extract.ts",
+    "check:all": "bun run check:standalone && bun run check:contract && bun run check:pair && bun run check:filesize && bun run check:escape && bun run check:prefix && bun run check:generated && bun run check:headers && bun run check:docs",
+    "check:standalone": "bun tools/checks/standalone.ts",
+    "check:contract": "bun tools/checks/contract.ts",
+    "check:pair": "bun tools/checks/pair.ts",
+    "check:filesize": "bun tools/checks/file-size.ts",
+    "check:escape": "bun tools/checks/php-escape.ts",
+    "check:prefix": "bun tools/checks/prefix.ts",
+    "check:generated": "bun tools/checks/generated-in-sync.ts",
+    "check:headers": "bun tools/checks/headers.ts",
+    "check:docs": "bun tools/checks/docs.ts"
+  }
+}

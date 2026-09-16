@@ -1,0 +1,80 @@
+# Local WordPress for looking at the pen.
+#
+# The plugin is BIND-MOUNTED from ../quire-ink-pen, so an edit on the Mac is live on the next
+# request: this stack is a viewer, never a copy to keep in sync. `docker compose down -v` and
+# the next `up` gives a clean install.
+#
+# The THEME is mounted too, and is deliberately NOT activated by default. Invariant 1 is that
+# the plugin works with no Quire Ink theme present, and that case is the one nobody ever looks
+# at because every developer has the theme installed. `dev/up.sh` leaves Twenty Twenty-Five in
+# place; `dev/up.sh --paired` switches to quire-ink.
+#
+# The version pins are deliberate. WordPress moves, and a screenshot compared against "whatever
+# :latest was that day" cannot be re-taken a month later.
+
+name: quireink-pen
+
+services:
+  db:
+    image: mariadb:11.4
+    environment:
+      MARIADB_DATABASE: wordpress
+      MARIADB_USER: wordpress
+      MARIADB_PASSWORD: wordpress
+      MARIADB_ROOT_PASSWORD: rootpw
+    volumes:
+      - db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  wordpress:
+    image: wordpress:6.8-php8.3-apache
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      # 8098, not 8099: the theme's viewer owns 8099 and both are often up at once, which is
+      # the only way to see the pairing and the standalone case side by side.
+      - "8098:80"
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DEBUG: 1
+      WORDPRESS_CONFIG_EXTRA: |
+        define( 'WP_ENVIRONMENT_TYPE', 'local' );
+        define( 'AUTOMATIC_UPDATER_DISABLED', true );
+        define( 'WP_HOME', 'http://localhost:8098' );
+        define( 'WP_SITEURL', 'http://localhost:8098' );
+    volumes:
+      - wp:/var/www/html
+      - ../quire-ink-pen:/var/www/html/wp-content/plugins/quire-ink-pen
+      # Read-only, and from the sibling checkout. This stack may look at the theme; it may
+      # never write to it.
+      - ../../quireink-wordpress-theme/quire-ink:/var/www/html/wp-content/themes/quire-ink:ro
+      - ./php-dev.ini:/usr/local/etc/php/conf.d/zz-quireink-dev.ini:ro
+
+  cli:
+    image: wordpress:cli-php8.3
+    depends_on:
+      - wordpress
+    user: "33:33"
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_NAME: wordpress
+    volumes:
+      - wp:/var/www/html
+      - ../quire-ink-pen:/var/www/html/wp-content/plugins/quire-ink-pen
+      - ../../quireink-wordpress-theme/quire-ink:/var/www/html/wp-content/themes/quire-ink:ro
+      - ./seed:/seed
+    entrypoint: ["tail", "-f", "/dev/null"]
+
+volumes:
+  db:
+  wp:

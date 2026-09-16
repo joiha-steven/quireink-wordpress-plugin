@@ -1,0 +1,29 @@
+{
+  "generated_from": {
+    "repo": "quireink",
+    "commit": "9b4940ee",
+    "describe": "v2.2.10-8-g9b4940ee"
+  },
+  "inks": {
+    "names": [
+      "yellow",
+      "green",
+      "pink",
+      "blue",
+      "orange"
+    ],
+    "signature": ""
+  },
+  "sheet": {
+    "path": "quire-ink-pen/assets/css/quireink-pen.css",
+    "bytes": 534237,
+    "gzip": 34533
+  },
+  "seed_probe": {
+    "a": 60,
+    "highlight": 47,
+    "a whole phrase that runs past twenty-eight characters": 34,
+    "Việt": 75,
+    "": 61
+  }
+}

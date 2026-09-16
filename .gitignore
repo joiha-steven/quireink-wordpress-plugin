@@ -1,0 +1,5 @@
+# Scratch: screenshots, fetched pages, anything a run can rebuild.
+.tmp/
+
+.DS_Store
+node_modules/
