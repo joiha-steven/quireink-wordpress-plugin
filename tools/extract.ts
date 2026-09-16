@@ -11,6 +11,7 @@
  *
  * Emits, into quire-ink-pen/:
  *   assets/css/quireink-pen.css   the whole pen, scoped to `.pen`, both schemes
+ *   assets/css/quireink-editor.css the toolbar and bubble bar's styling, cut from the admin build
  *   assets/js/quireink-engine.js  the Markdown engine, the pen grammar and the editor
  *   ../tools/extract-manifest.json  what came from where, at which commit
  *   ../tools/golden/expected.html   what the engine renders the golden fixture to
@@ -33,6 +34,7 @@ import { readFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { gzipSync } from 'node:zlib'
 import { $ } from 'bun'
+import { buildEditorCss } from './editor-css'
 
 import {
   inkHighlightCss, inkLinesCss, resolveInks, DEFAULT_INKS, inkSignature, penSeed, INKS,
@@ -145,6 +147,23 @@ const goldenHtml = (api.toHtml as (s: string) => string)(goldenSource)
 await mkdir(join(META, 'tools/golden'), { recursive: true })
 await writeFile(join(META, 'tools/golden/expected.html'), goldenHtml)
 
+// ---------------------------------------------------------------- the furniture's styling
+//
+// The toolbar and the bubble bar wear Tailwind utilities, so their look is not in a file to
+// copy: it is in a 668 KB build of the whole admin. `tools/editor-css.ts` reads the class
+// names out of the two components and keeps only the rules that mention them.
+const editorCss = buildEditorCss(
+  join(QUIRE, 'src/admin/dist/admin.css'),
+  [
+    join(QUIRE, 'src/admin/components/editor-toolbar.ts'),
+    join(QUIRE, 'src/admin/components/editor-menus.ts'),
+  ],
+  css,
+)
+await writeFile(join(OUT, 'assets/css/quireink-editor.css'), editorCss)
+const edRaw = Buffer.byteLength(editorCss)
+const edGz = gzipSync(editorCss, { level: 9 }).byteLength
+
 const commit = (await $`git -C ${QUIRE} rev-parse --short HEAD`.quiet().nothrow()).stdout.toString().trim() || 'unknown'
 const describe = (await $`git -C ${QUIRE} describe --tags --always`.quiet().nothrow()).stdout.toString().trim() || 'unknown'
 
@@ -167,12 +186,18 @@ await writeFile(
       modules: bundle.outputs.length,
       api: surface,
     },
+    editor_css: {
+      path: 'quire-ink-pen/assets/css/quireink-editor.css',
+      bytes: edRaw,
+      gzip: edGz,
+    },
     seed_probe: seeds,
   }, null, 2) + '\n',
 )
 
 console.log(`  quireink-pen.css     ${raw.toLocaleString()} B raw, ${gz.toLocaleString()} B gzip`)
 console.log(`  quireink-engine.js   ${Buffer.byteLength(engineJs).toLocaleString()} B raw, ${gzipSync(engineJs, { level: 9 }).byteLength.toLocaleString()} B gzip`)
+console.log(`  quireink-editor.css  ${edRaw.toLocaleString()} B raw, ${edGz.toLocaleString()} B gzip`)
 console.log(`  engine API           ${surface.join(', ')}`)
 console.log(`  from quireink ${describe} (${commit})`)
 console.log('✓ extract: ok')

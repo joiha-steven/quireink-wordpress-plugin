@@ -19,6 +19,7 @@ const WARN_AT = Math.floor(MAX_LINES * 0.95)
 const GENERATED = [
   { path: 'quire-ink-pen/assets/css/quireink-pen.css', gzipMax: 44_000, note: 'reaches readers' },
   { path: 'quire-ink-pen/assets/js/quireink-engine.js', gzipMax: 240_000, note: 'admin only, on demand' },
+  { path: 'quire-ink-pen/assets/css/quireink-editor.css', gzipMax: 12_000, note: 'admin only, cut from a 668 KB build' },
 ]
 
 const walk = (dir: string): string[] =>

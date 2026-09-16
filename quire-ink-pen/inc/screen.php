@@ -103,8 +103,10 @@ function quireink_pen_render_screen( $post ) {
 	remove_action( 'admin_print_styles', 'print_emoji_styles' );
 
 	wp_enqueue_style( 'quireink-pen', $dir . 'css/quireink-pen.css', array(), quireink_pen_asset_version( 'assets/css/quireink-pen.css' ) );
-	wp_enqueue_style( 'quireink-pen-screen', $dir . 'css/screen.css', array( 'quireink-pen' ), quireink_pen_asset_version( 'assets/css/screen.css' ) );
+	wp_enqueue_style( 'quireink-pen-editor-ui', $dir . 'css/quireink-editor.css', array(), quireink_pen_asset_version( 'assets/css/quireink-editor.css' ) );
+	wp_enqueue_style( 'quireink-pen-screen', $dir . 'css/screen.css', array( 'quireink-pen', 'quireink-pen-editor-ui' ), quireink_pen_asset_version( 'assets/css/screen.css' ) );
 	wp_enqueue_script( 'quireink-pen-engine', $dir . 'js/quireink-engine.js', array(), quireink_pen_asset_version( 'assets/js/quireink-engine.js' ), true );
+	wp_enqueue_media();
 	wp_enqueue_script( 'quireink-pen-app', $dir . 'js/app.js', array( 'quireink-pen-engine', 'wp-i18n' ), quireink_pen_asset_version( 'assets/js/app.js' ), true );
 
 	wp_localize_script(

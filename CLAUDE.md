@@ -79,6 +79,7 @@ is the only way to see the pairing work.
 | A mark loses its `data-pen` on save | `docs/gaps.md`, `wp_kses` — a contributor's HTML is filtered |
 | The same words got a different stroke | `assets/js/seed.js` — the hash is the engine's, published in its `docs/pen.md` |
 | Nothing is styled although the markup is right | the `pen` class on `<body>`; `inc/enqueue.php` adds it |
+| The toolbar is unstyled, or a bar will not hide | `tools/editor-css.ts` — the subset cut from the engine's Tailwind build |
 | The writing screen is blank, or throws | `quire-ink-pen/assets/js/app.js`, then `inc/screen.php` |
 | Content opened in the wrong shape | `tools/engine-entry.ts` `htmlToNodes` — it returns CHILDREN, never a `doc` |
 | A save was refused | `inc/rest.php` — 409 means the post was edited elsewhere; `inc/store.php` explains |
@@ -113,7 +114,8 @@ is the only way to see the pairing work.
 
 ## Danger zones
 
-- **`assets/css/quireink-pen.css` and `assets/js/quireink-engine.js` are GENERATED.** Editing
+- **`assets/css/quireink-pen.css`, `assets/css/quireink-editor.css` and
+  `assets/js/quireink-engine.js` are GENERATED.** Editing
   either is pointless: the next extract overwrites it and `check:generated` is red until it
   does. The engine bundle is `bun build` over the sibling checkout, 79 modules including
   ProseMirror, and it is never read by a human: `check:generated` reports the engine VERSION,

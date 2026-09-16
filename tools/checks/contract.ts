@@ -27,7 +27,8 @@ const walk = (dir: string): string[] =>
 // carries the real seed hash, and counting it as a second implementation would make invariant
 // 3's guard permanently red for the one file that is allowed to have it.
 const GENERATED = (p: string) =>
-  p.endsWith('assets/js/quireink-engine.js') || p.endsWith('assets/css/quireink-pen.css')
+  p.endsWith('assets/js/quireink-engine.js') || p.endsWith('assets/css/quireink-pen.css') ||
+  p.endsWith('assets/css/quireink-editor.css')
 
 const files = walk(PLUGIN).filter((p) => !GENERATED(p))
 const bad: string[] = []

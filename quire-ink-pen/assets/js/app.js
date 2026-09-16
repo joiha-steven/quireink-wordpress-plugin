@@ -60,9 +60,11 @@
 		) } );
 	}
 
+	var toolbarHost = el( 'div', { class: 'qi-toolbar' } );
 	var host = el( 'div', { class: 'qi-host' } );
 	var page = el( 'div', { class: 'qi-page' }, notice ? [ notice, host ] : [ host ] );
 	root.appendChild( bar );
+	root.appendChild( toolbarHost );
 	root.appendChild( page );
 
 	// ── the editor ───────────────────────────────────────────────────────────────────────
@@ -76,6 +78,77 @@
 		placeholder: __( 'Write.', 'quire-ink-pen' ),
 	} );
 	editor.focus();
+
+	// ── the writing furniture ────────────────────────────────────────────────────────────
+	//
+	// The blog engine's own toolbar and bubble bar, not a second pair built here. Everything
+	// they can do is what the engine's writer already knows how to do, and when the engine
+	// gains a button this gains it too, through `bun run extract`.
+
+	/**
+	 * The link box.
+	 *
+	 * `window.prompt` and not a designed dialog, deliberately and for now: the engine's own
+	 * link box is part of its admin shell rather than its editor, so lifting it means lifting
+	 * the shell. A prompt is honest about being temporary; a half-built dialog is not.
+	 * Resolves to a URL, '' to unlink, or null when the writer backs out.
+	 */
+	function askLink( previous ) {
+		var answer = window.prompt( __( 'Link address', 'quire-ink-pen' ), previous || '' );
+		return Promise.resolve( answer === null ? null : answer.trim() );
+	}
+
+	/**
+	 * Pictures come from WordPress's own media library, because on a WordPress site that is
+	 * where the writer's pictures already are. The engine's picker talks to the engine's
+	 * storage and has no business here.
+	 */
+	function pickMedia( multiple, onPicked ) {
+		if ( ! window.wp || ! window.wp.media ) {
+			window.alert( __( 'The WordPress media library is not available on this screen.', 'quire-ink-pen' ) );
+			return;
+		}
+		var frame = window.wp.media( {
+			title: __( 'Choose a picture', 'quire-ink-pen' ),
+			multiple: !! multiple,
+			library: { type: 'image' },
+		} );
+		frame.on( 'select', function () {
+			var picked = frame.state().get( 'selection' ).toJSON();
+			onPicked( picked.map( function ( a ) {
+				return { src: a.url, alt: a.alt || '', width: a.width, height: a.height };
+			} ) );
+		} );
+		frame.open();
+	}
+
+	var toolbar = engine.mountToolbar( toolbarHost, {
+		editor: editor,
+		words: engine.words,
+		askLink: askLink,
+		onPickImage: function () {
+			pickMedia( false, function ( items ) {
+				if ( items[ 0 ] ) { editor.chain().focus().setImage( items[ 0 ] ).run(); }
+			} );
+		},
+		onPickGallery: function () {
+			pickMedia( true, function ( items ) {
+				if ( items.length ) { editor.chain().focus().setGallery( { images: items } ).run(); }
+			} );
+		},
+	} );
+
+	var bubble = engine.mountBubbleBar( editor, engine.sheetWords, askLink );
+
+	// Both bars are told how much sticky furniture is above them, measured rather than assumed:
+	// the top bar's height depends on the font the admin is rendering in.
+	function measureTop() {
+		var px = bar.getBoundingClientRect().height;
+		if ( toolbar && toolbar.setTop ) { toolbar.setTop( px ); }
+		if ( bubble && bubble.setAvoidTop ) { bubble.setAvoidTop( px + toolbarHost.getBoundingClientRect().height ); }
+	}
+	measureTop();
+	window.addEventListener( 'resize', measureTop );
 
 	function dirty() {
 		return editor.getMarkdown() !== savedMarkdown;

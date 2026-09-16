@@ -60,6 +60,26 @@ development, and the plugin version otherwise. Without it an edited sheet or scr
 invisible behind `?ver=0.1.0`, and a fix gets measured as still broken. That happened twice
 here, to the same stylesheet.
 
+## The writing screen wears the engine's own furniture
+
+`mountToolbar` and `mountBubbleBar` are the blog engine's, brought across by the extractor, so
+a button it gains this gains too. What is written here is only the wiring: the link box is a
+`window.prompt` for now, and pictures come from WordPress's media library rather than the
+engine's picker, because on a WordPress site that is where the writer's pictures already are.
+
+**Their styling is Tailwind UTILITIES**, so it is not in a file to copy: it is in a 668 KB
+build of the whole admin. `tools/editor-css.ts` reads the class names out of the two component
+sources and keeps the rules that mention them, which came to 31 KB. Three things that cut
+learned the hard way, each now a comment in that file:
+
+- **Tailwind 4 puts every utility inside `@layer`.** Skipping unknown at-rules kept 61
+  `@property` declarations and almost no rules, and the toolbar rendered as bare text.
+- **`[hidden]` belongs to the reset.** Without Tailwind's preflight rule, `.flex` beats the
+  browser's `display:none` and the bubble bar sits on screen permanently with `hidden` set.
+- **The cut has to close over its own variables.** A kept rule reading a dropped
+  `--dur-fast` is not an error, it is an animation that never runs. And the closure must
+  SKIP what the pen sheet owns, or `--ink-h` at `:root` changes stroke height by 4%.
+
 ## The seed hash
 
 `assets/js/seed.js` holds it, once. It is the engine's, published in its `docs/pen.md`:

@@ -19,7 +19,8 @@ const JS_PREFIX = 'quireInkPen'
 // minifier produced, and holding it to rules about code somebody here typed would either flag
 // it forever or have to be silenced with a special case that nobody reads.
 const GENERATED = (p: string) =>
-  p.endsWith('assets/js/quireink-engine.js') || p.endsWith('assets/css/quireink-pen.css')
+  p.endsWith('assets/js/quireink-engine.js') || p.endsWith('assets/css/quireink-pen.css') ||
+  p.endsWith('assets/css/quireink-editor.css')
 
 
 const walk = (dir: string): string[] =>

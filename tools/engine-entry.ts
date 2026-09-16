@@ -9,6 +9,10 @@
 import { DOMParser as PMDOMParser } from 'prosemirror-model'
 import { Editor } from '@/admin/editor/editor'
 import { schema } from '@/admin/editor/schema'
+import { mountToolbar, toolbarWords } from '@/admin/components/editor-toolbar'
+import { mountBubbleBar } from '@/admin/components/editor-menus'
+import { sheetWords } from '@/admin-shared/sheet-wire'
+import adminEn from '@/locales/admin/en'
 import { parse, toHtml } from '@/md'
 import { penSeed, INKS, DEFAULT_INK } from '@/pen'
 
@@ -43,6 +47,17 @@ function htmlToNodes(html: string): unknown[] {
   Editor,
   schema,
   htmlToNodes,
+  // The writing furniture, which is the blog engine's own and not a second one built here:
+  // the toolbar above the page and the bubble bar that follows a selection.
+  mountToolbar,
+  mountBubbleBar,
+  // English only (ADR 0006). The words are a plain object, so a host that wants another
+  // language hands `toolbarWords` its own rather than this one.
+  // Two shapes of the same words: the toolbar takes its own narrowed set, the bubble bar
+  // takes the sheet's. Both are plain objects, so a host wanting another language builds them
+  // from its own strings rather than from these.
+  words: toolbarWords(sheetWords(adminEn)),
+  sheetWords: sheetWords(adminEn),
   parse,
   toHtml,
   penSeed,
