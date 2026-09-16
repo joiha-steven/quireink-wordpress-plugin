@@ -23,7 +23,13 @@ const walk = (dir: string): string[] =>
     return statSync(p).isDirectory() ? walk(p) : [p]
   })
 
-const files = walk(PLUGIN)
+// See prefix.ts for the same exemption and the same reason: the bundle IS the engine, so it
+// carries the real seed hash, and counting it as a second implementation would make invariant
+// 3's guard permanently red for the one file that is allowed to have it.
+const GENERATED = (p: string) =>
+  p.endsWith('assets/js/quireink-engine.js') || p.endsWith('assets/css/quireink-pen.css')
+
+const files = walk(PLUGIN).filter((p) => !GENERATED(p))
 const bad: string[] = []
 
 // ── the seed exists exactly once ─────────────────────────────────────────────────────────

@@ -11,6 +11,16 @@ words, so no two marks on a page are the same shape.
 wordpress.org requires, and the reason the ink sheet is generated rather than reasoned about:
 this copy of the pen is GPL, the blog engine is not.
 
+## Two ways to write
+
+**In Gutenberg**, three inline formats with keyboard shortcuts: `Cmd/Ctrl+Shift+H` highlight,
+`+U` underline, `+O` ring. Works on any theme, alongside every other plugin.
+
+**Or in Quire Ink's own editor**, a second screen reached by "Write in Quire Ink" from a post
+([ADR 0008](./docs/decisions/0008-a-second-writing-screen-not-a-replacement.md)). Typing
+`==x==` becomes a stroke as the closing `=` lands, which is the thing Gutenberg cannot do at
+any price. Gutenberg is not replaced and not discouraged.
+
 ## It works alone. So does the theme.
 
 > Neither this plugin nor [the theme](https://github.com/joiha-steven/quireink-wordpress-theme)
@@ -25,7 +35,7 @@ one, so it is guarded, not remembered: [`docs/pair.md`](./docs/pair.md) and `che
 bun run check:all
 ```
 
-Nine static guards — `standalone` · `contract` · `pair` · `filesize` · `escape` · `prefix` · `generated` · `headers` · `docs`. Seconds.
+Ten static guards — `standalone` · `contract` · `pair` · `filesize` · `escape` · `prefix` · `generated` · `headers` · `deps` · `docs`. Seconds.
 `check:generated` skips with a warning when there is no Quire Ink checkout beside this one.
 
 `check:all` proves the seams hold. It cannot tell you the stroke sits a line too high, that
@@ -69,6 +79,10 @@ is the only way to see the pairing work.
 | A mark loses its `data-pen` on save | `docs/gaps.md`, `wp_kses` — a contributor's HTML is filtered |
 | The same words got a different stroke | `assets/js/seed.js` — the hash is the engine's, published in its `docs/pen.md` |
 | Nothing is styled although the markup is right | the `pen` class on `<body>`; `inc/enqueue.php` adds it |
+| The writing screen is blank, or throws | `quire-ink-pen/assets/js/app.js`, then `inc/screen.php` |
+| Content opened in the wrong shape | `tools/engine-entry.ts` `htmlToNodes` — it returns CHILDREN, never a `doc` |
+| A save was refused | `inc/rest.php` — 409 means the post was edited elsewhere; `inc/store.php` explains |
+| The editor refuses content with no error | `bun run check:deps` — two copies of ProseMirror |
 | The local WordPress | `dev/docker-compose.yml`, `dev/up.sh` |
 
 ## Hard rules — each one is a bug that has already shipped in a sibling repository

@@ -1,0 +1,114 @@
+/*
+ * The writing screen's furniture. NOT the prose: the ink sheet draws the marks and the
+ * engine's editor brings its own node styling, so what is here is the bar, the notice and the
+ * column the writing sits in.
+ *
+ * Hand-written, which means invariant 1 applies: no custom property is read that this plugin
+ * does not define, except through a fallback, and no selector names the theme. This screen is
+ * wp-admin, so there is no theme in the room at all - but the guard does not know that and
+ * should not have to.
+ */
+
+.quireink-pen-screen {
+	margin: 0;
+	background: #fcfcfc;
+	color: #30302f;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.qi-bar {
+	position: sticky;
+	top: 0;
+	z-index: 10;
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	padding: 0.7rem 1.2rem;
+	background: #fff;
+	box-shadow: 0 0 0 1px #e3e2e2;
+}
+
+.qi-title {
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-weight: 600;
+}
+
+.qi-status {
+	font-size: 0.85rem;
+	color: #6d6c6c;
+	min-width: 6rem;
+	text-align: right;
+}
+
+.qi-status-ok { color: #2b6b3f; }
+.qi-status-warn { color: #8a4b00; }
+
+.qi-bar a {
+	color: #1a1919;
+	font-size: 0.9rem;
+	text-decoration: underline;
+	text-underline-offset: 2px;
+}
+
+.qi-save {
+	font: inherit;
+	font-size: 0.9rem;
+	padding: 0.4rem 1.1rem;
+	color: #fff;
+	background: #1a1919;
+	border: 1px solid #1a1919;
+	border-radius: 3px;
+	cursor: pointer;
+}
+
+.qi-save[disabled] { opacity: 0.55; cursor: default; }
+
+.qi-page {
+	max-width: 42rem;
+	margin: 0 auto;
+	padding: 2.5rem 1.2rem 6rem;
+}
+
+.qi-notice {
+	margin: 0 0 1.6rem;
+	padding: 0.8rem 1rem;
+	font-size: 0.9rem;
+	line-height: 1.5;
+	background: #f4f4f3;
+	box-shadow: 0 0 0 1px #e3e2e2;
+}
+
+/* A control's edge has to be identifiable, so this one is not a hairline (WCAG 2.1 SC 1.4.11). */
+.qi-notice-warn {
+	background: #fdf6ec;
+	box-shadow: 0 0 0 1px #c98a2e;
+}
+
+/* The writing itself. The engine's editor mounts a contenteditable in here. */
+.qi-host > .ProseMirror {
+	outline: none;
+	min-height: 60vh;
+	font-size: 1.05rem;
+	line-height: 1.7;
+}
+
+.qi-host > .ProseMirror > * { margin: 0 0 1.1rem; }
+.qi-host > .ProseMirror h1 { font-size: 1.9rem; line-height: 1.2; margin: 2rem 0 1rem; }
+.qi-host > .ProseMirror h2 { font-size: 1.45rem; line-height: 1.25; margin: 1.8rem 0 0.8rem; }
+.qi-host > .ProseMirror h3 { font-size: 1.15rem; margin: 1.5rem 0 0.6rem; }
+.qi-host > .ProseMirror pre {
+	padding: 0.9rem 1rem;
+	overflow-x: auto;
+	background: #f4f4f3;
+	font-size: 0.9rem;
+}
+.qi-host > .ProseMirror blockquote {
+	margin-inline: 0;
+	padding-left: 1rem;
+	border-left: 2px solid #c9c8c8;
+	color: #4a4a49;
+}

@@ -21,15 +21,17 @@
   },
   "engine": {
     "path": "quire-ink-pen/assets/js/quireink-engine.js",
-    "bytes": 599771,
-    "gzip": 189504,
+    "bytes": 599968,
+    "gzip": 189618,
     "modules": 1,
     "api": [
       "DEFAULT_INK",
       "Editor",
       "INKS",
+      "htmlToNodes",
       "parse",
       "penSeed",
+      "schema",
       "toHtml"
     ]
   },

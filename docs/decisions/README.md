@@ -12,3 +12,4 @@ supersedes it; read this index before going against any of them.
 | [0005](0005-gpl-v2-or-later.md) | **GPLv2 or later**, which is what wordpress.org requires | in force |
 | [0006](0006-english-only.md) | English strings only; translation-ready, no translations | in force |
 | [0007](0007-no-settings-screen.md) | No settings screen. Filters and theme support instead | in force, revisit |
+| [0008](0008-a-second-writing-screen-not-a-replacement.md) | A second writing screen, never a replacement | in force |
