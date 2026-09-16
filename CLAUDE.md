@@ -37,6 +37,10 @@ dev/up.sh        # WordPress on http://localhost:8098, admin / admin
 tools/shot.sh <url> .tmp/shots/<name>.png
 ```
 
+`shot.sh` runs a fresh headless Chrome, so a scheme you switched in YOUR browser is not in its.
+Set `quireink_default_scheme` as a theme mod and put it back, or the file is named for a state
+it does not contain: `docs/shots/paired-dark.png` was captured light the first time.
+
 Port **8098**, not 8099: the theme's dev stack owns 8099 and both are often up at once, which
 is the only way to see the pairing work.
 
@@ -96,9 +100,9 @@ is the only way to see the pairing work.
 
 - **`quire-ink-pen/assets/css/quireink-pen.css` is GENERATED.** Editing it is pointless: the
   next extract overwrites it and `check:generated` is red until it does.
-- **44 KB gzip is the budget, and it is the whole reason this is possible.** Raw the sheet is
-  531 KB. `check:filesize` holds the compressed figure, because a raw comparison would have
-  passed the day the sheet stopped compressing.
+- **The compressed size is the whole reason this is possible.** 534,237 B raw, **34,533 B
+  gzip**, budget 44,000. `check:filesize` gzips the sheet on every run, because a raw byte
+  comparison would have passed on the day a change made the sheet stop compressing.
 - **`dev/` throws its database away.** `dev/down.sh` is `docker compose down -v`.
 - **`localhost:8098`, never `127.0.0.1:8098`.** WordPress writes asset URLs against its
   `siteurl`; the same page on `127.0.0.1` loses every module script and font to CORS, silently,
