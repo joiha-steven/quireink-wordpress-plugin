@@ -22,9 +22,44 @@ on the file it just wrote while `ls` from here says the file does not exist.
 3. Run `bun run extract` and **read the diff**.
 4. Run `bun run check:all`.
 
+## When the blog engine releases a new version
+
+This is the whole point of the seam, so it is one command and three lines of reading:
+
+```bash
+bun run extract      # rebuild the ink and the engine bundle from the sibling checkout
+bun run check:all
+```
+
+`check:generated` will **not** ask you to read a diff of a 600 KB minified bundle. Nobody can
+read one, so nobody would, and a check whose output is unreadable gets approved blind. It
+reports the three things a person can actually judge:
+
+| It says | Which means |
+|---|---|
+| `engine version: v2.2.11 -> v2.3.0` | what moved |
+| `engine API: unchanged` | nothing this plugin calls has disappeared |
+| `golden: unchanged` | `==x==` still renders to the same HTML |
+
+If the API line names something **REMOVED**, [`tools/engine-entry.ts`](../../tools/engine-entry.ts)
+still asks for it and the editor will throw at run time, in front of an author, with no
+warning anywhere else. Fix the entry or the call site before committing.
+
+If the **golden changed**, the check prints the before and after lines. That is a change to
+what a post looks like, and it is a decision rather than a formality: somebody's published
+writing renders differently after this update.
+
+Otherwise it is just bytes, and committing them is the whole job.
+
+## Keep `engine-entry.ts` short
+
+It is the ONE door into the engine, and every export in it is a promise this plugin has to
+keep working across upstream releases that know nothing about it. Six names today. A seventh
+should have to earn its place.
+
 ## What a red `check:generated` means
 
-The engine moved. That is the seam reporting, not a failure. Re-extract, read the diff,
+The engine moved. That is the seam reporting, not a failure. Re-extract, read the three lines,
 commit both together.
 
 ## What does not come

@@ -10,8 +10,16 @@ import { gzipSync } from 'node:zlib'
 
 const MAX_LINES = 400
 const WARN_AT = Math.floor(MAX_LINES * 0.95)
-const SHEET = 'quire-ink-pen/assets/css/quireink-pen.css'
-const SHEET_GZIP_MAX = 44_000
+// Both budgets are COMPRESSED. A raw byte count would have stayed green on the day a change
+// made an artefact stop compressing, which is the only way either number really moves.
+//
+// The engine's is the looser one on purpose: it is an ADMIN-ONLY asset, fetched when somebody
+// opens the Quire Ink editor and never by a reader. The sheet's budget guards a page a visitor
+// waits for; this one guards a screen an author asked for.
+const GENERATED = [
+  { path: 'quire-ink-pen/assets/css/quireink-pen.css', gzipMax: 44_000, note: 'reaches readers' },
+  { path: 'quire-ink-pen/assets/js/quireink-engine.js', gzipMax: 240_000, note: 'admin only, on demand' },
+]
 
 const walk = (dir: string): string[] =>
   readdirSync(dir).flatMap((n) => {
@@ -22,7 +30,7 @@ const walk = (dir: string): string[] =>
 // The generated sheet is exempt from the line rule and not from the byte rule. Nobody reads it,
 // nobody edits it, and splitting it would mean the extractor deciding where to cut a file it
 // copies verbatim.
-const generated = (p: string) => p.endsWith('quireink-pen.css')
+const generated = (p: string) => GENERATED.some((g) => p === g.path)
 
 const files = [...walk('quire-ink-pen'), ...walk('tools')]
   .filter((p) => /\.(ts|php|js|sh)$/.test(p) && !generated(p))
@@ -34,14 +42,14 @@ const near = sized.filter(({ n }) => n > WARN_AT && n <= MAX_LINES).sort((a, b) 
 console.log(`  scanned ${files.length} file(s) (limit ${MAX_LINES} lines)`)
 for (const { p, n } of near) console.log(`  · ${p}: ${n}, within ${MAX_LINES - WARN_AT} of the limit`)
 
-const raw = readFileSync(SHEET)
-const gz = gzipSync(raw, { level: 9 }).byteLength
-console.log(`  ${SHEET}: ${raw.byteLength.toLocaleString()} B raw, ${gz.toLocaleString()} B gzip (max ${SHEET_GZIP_MAX.toLocaleString()})`)
+const bad = over.map(({ p, n }) => `${p}: ${n} lines`)
 
-const bad = [
-  ...over.map(({ p, n }) => `${p}: ${n} lines`),
-  ...(gz > SHEET_GZIP_MAX ? [`${SHEET}: ${gz.toLocaleString()} B gzip over the ${SHEET_GZIP_MAX.toLocaleString()} B budget`] : []),
-]
+for (const { path, gzipMax, note } of GENERATED) {
+  const raw = readFileSync(path)
+  const gz = gzipSync(raw, { level: 9 }).byteLength
+  console.log(`  ${path.split('/').pop()}: ${raw.byteLength.toLocaleString()} B raw, ${gz.toLocaleString()} B gzip (max ${gzipMax.toLocaleString()}, ${note})`)
+  if (gz > gzipMax) bad.push(`${path}: ${gz.toLocaleString()} B gzip over the ${gzipMax.toLocaleString()} B budget`)
+}
 
 if (bad.length === 0) console.log('✓ check:filesize: ok')
 else {

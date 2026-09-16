@@ -52,6 +52,7 @@ is the only way to see the pairing work.
 | Finding your way | [`docs/README.md`](./docs/README.md) — the index |
 | Anything that touches the theme, or could | [`docs/pair.md`](./docs/pair.md) — generated; edit the master |
 | Touching the ink, a colour, a stroke | [`docs/conventions/extract.md`](./docs/conventions/extract.md) |
+| **Quire Ink just released a new version** | [`docs/conventions/extract.md`](./docs/conventions/extract.md) — one command, three lines of reading |
 | Touching PHP | [`docs/conventions/php.md`](./docs/conventions/php.md) |
 | Touching the editor JS | [`docs/conventions/editor.md`](./docs/conventions/editor.md) |
 | Going against a past decision | [`docs/decisions/`](./docs/decisions/README.md) — the in-force index first |
@@ -98,8 +99,11 @@ is the only way to see the pairing work.
 
 ## Danger zones
 
-- **`quire-ink-pen/assets/css/quireink-pen.css` is GENERATED.** Editing it is pointless: the
-  next extract overwrites it and `check:generated` is red until it does.
+- **`assets/css/quireink-pen.css` and `assets/js/quireink-engine.js` are GENERATED.** Editing
+  either is pointless: the next extract overwrites it and `check:generated` is red until it
+  does. The engine bundle is `bun build` over the sibling checkout, 79 modules including
+  ProseMirror, and it is never read by a human: `check:generated` reports the engine VERSION,
+  the exported API and the golden render instead of a byte diff.
 - **The compressed size is the whole reason this is possible.** 534,237 B raw, **34,533 B
   gzip**, budget 44,000. `check:filesize` gzips the sheet on every run, because a raw byte
   comparison would have passed on the day a change made the sheet stop compressing.

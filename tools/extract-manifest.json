@@ -19,6 +19,20 @@
     "bytes": 604910,
     "gzip": 34906
   },
+  "engine": {
+    "path": "quire-ink-pen/assets/js/quireink-engine.js",
+    "bytes": 599771,
+    "gzip": 189504,
+    "modules": 1,
+    "api": [
+      "DEFAULT_INK",
+      "Editor",
+      "INKS",
+      "parse",
+      "penSeed",
+      "toHtml"
+    ]
+  },
   "seed_probe": {
     "a": 60,
     "highlight": 47,

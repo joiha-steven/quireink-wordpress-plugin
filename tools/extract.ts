@@ -11,7 +11,22 @@
  *
  * Emits, into quire-ink-pen/:
  *   assets/css/quireink-pen.css   the whole pen, scoped to `.pen`, both schemes
+ *   assets/js/quireink-engine.js  the Markdown engine, the pen grammar and the editor
  *   ../tools/extract-manifest.json  what came from where, at which commit
+ *   ../tools/golden/expected.html   what the engine renders the golden fixture to
+ *
+ * ## When the blog engine updates
+ *
+ * Re-run this. `check:generated` is red until you do, and it does NOT ask you to read a diff
+ * of a 600 KB minified bundle, because nobody can. It reports the three things a human can
+ * actually approve:
+ *
+ *   1. which engine version the bundle came from, before and after
+ *   2. whether the EXPORTED API changed - that is what breaks this plugin
+ *   3. whether the golden fixture still renders to the same HTML - that is what breaks a post
+ *
+ * A byte diff would be noise. An API name disappearing, or `==x==` rendering differently, is
+ * the whole of what matters, and both are named out loud.
  */
 import { writeFile, mkdir } from 'node:fs/promises'
 import { readFileSync } from 'node:fs'
@@ -30,6 +45,10 @@ const QUIRE = join(HERE, '..', 'quireink')
 // can produce a fresh copy and compare bytes without touching what is committed: a check that
 // has to modify the tree to run is a check people turn off.
 const OUT = process.env.EXTRACT_OUT ?? join(HERE, 'quire-ink-pen')
+// The manifest and the golden are compared BY the check, so they must not be written by it.
+// A check that modifies the tree in order to run is a check people turn off, and then the
+// thing it guards drifts for a month.
+const META = process.env.EXTRACT_OUT ? process.env.EXTRACT_OUT : HERE
 
 const HEAD = `/*!
  * The pen, generated from Quire Ink (https://quireink.com) by tools/extract.ts.
@@ -92,6 +111,40 @@ if (!written.includes('.pen, .editor-styles-wrapper) mark')) {
 const raw = Buffer.byteLength(css)
 const gz = gzipSync(css, { level: 9 }).byteLength
 
+// ---------------------------------------------------------------- the engine, bundled
+//
+// `bun build` rather than a copy: 79 modules including ProseMirror, resolved by the engine's
+// own tsconfig, so there is no list here to fall out of date. The editor imports nothing from
+// the server (measured: zero `@/server` imports), which is what makes this possible at all.
+const ENTRY = join(HERE, 'tools/engine-entry.ts')
+const bundle = await Bun.build({
+  entrypoints: [ENTRY],
+  target: 'browser',
+  format: 'iife',
+  minify: true,
+})
+if (!bundle.success) {
+  for (const log of bundle.logs) console.error(log)
+  throw new Error('The engine bundle failed to build.')
+}
+const engineJs = await bundle.outputs[0]!.text()
+await mkdir(join(OUT, 'assets/js'), { recursive: true })
+await writeFile(join(OUT, 'assets/js/quireink-engine.js'), engineJs)
+
+// The API surface, read off the bundle by running it. A name that disappears upstream is the
+// thing that breaks this plugin, and it breaks it at run time, in the editor, silently.
+const sandbox: Record<string, unknown> = {}
+new Function('globalThis', 'window', engineJs)(sandbox, sandbox)
+const api = sandbox.quireInkEngine as Record<string, unknown> | undefined
+if (!api) throw new Error('The bundle did not define globalThis.quireInkEngine.')
+const surface = Object.keys(api).sort()
+
+// And what it RENDERS, which is what breaks a post rather than the plugin.
+const goldenSource = readFileSync(join(HERE, 'tools/golden/source.md'), 'utf8')
+const goldenHtml = (api.toHtml as (s: string) => string)(goldenSource)
+await mkdir(join(META, 'tools/golden'), { recursive: true })
+await writeFile(join(META, 'tools/golden/expected.html'), goldenHtml)
+
 const commit = (await $`git -C ${QUIRE} rev-parse --short HEAD`.quiet().nothrow()).stdout.toString().trim() || 'unknown'
 const describe = (await $`git -C ${QUIRE} describe --tags --always`.quiet().nothrow()).stdout.toString().trim() || 'unknown'
 
@@ -102,15 +155,24 @@ const SEED_PROBE = ['a', 'highlight', 'a whole phrase that runs past twenty-eigh
 const seeds = Object.fromEntries(SEED_PROBE.map((s) => [s, penSeed(s)]))
 
 await writeFile(
-  join(HERE, 'tools/extract-manifest.json'),
+  join(META, 'tools/extract-manifest.json'),
   JSON.stringify({
     generated_from: { repo: 'quireink', commit, describe },
     inks: { names: INKS, signature: inkSignature(DEFAULT_INKS) },
     sheet: { path: 'quire-ink-pen/assets/css/quireink-pen.css', bytes: raw, gzip: gz },
+    engine: {
+      path: 'quire-ink-pen/assets/js/quireink-engine.js',
+      bytes: Buffer.byteLength(engineJs),
+      gzip: gzipSync(engineJs, { level: 9 }).byteLength,
+      modules: bundle.outputs.length,
+      api: surface,
+    },
     seed_probe: seeds,
   }, null, 2) + '\n',
 )
 
-console.log(`  quireink-pen.css  ${raw.toLocaleString()} B raw, ${gz.toLocaleString()} B gzip`)
+console.log(`  quireink-pen.css     ${raw.toLocaleString()} B raw, ${gz.toLocaleString()} B gzip`)
+console.log(`  quireink-engine.js   ${Buffer.byteLength(engineJs).toLocaleString()} B raw, ${gzipSync(engineJs, { level: 9 }).byteLength.toLocaleString()} B gzip`)
+console.log(`  engine API           ${surface.join(', ')}`)
 console.log(`  from quireink ${describe} (${commit})`)
 console.log('✓ extract: ok')
