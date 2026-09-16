@@ -36,13 +36,25 @@ fi
 echo "==> plugin"
 wp plugin activate quire-ink-pen
 
+active=$(wp theme list --status=active --field=name 2>/dev/null | head -1 || true)
+
 if [ "$PAIRED" = "1" ]; then
   echo "==> theme: quire-ink (paired)"
   wp theme activate quire-ink
+elif [ "$active" = "quire-ink" ]; then
+  # Standalone is INVARIANT 1 and it is the case nobody looks at, so a previous --paired run
+  # must not silently leak into it. Newest bundled theme wins; `sort` and not `tail` alone,
+  # because `wp theme list` orders by directory read and twentytwentyfour has come back last.
+  default=$(wp theme list --field=name | grep '^twentytwenty' | sort | tail -1)
+  if [ -n "$default" ]; then
+    echo "==> theme: back to $default (invariant 1)"
+    wp theme activate "$default"
+  else
+    echo "==> theme: quire-ink is active and no bundled theme is installed"
+    echo "    standalone cannot be seen in this database. dev/down.sh, then up again."
+  fi
 else
-  echo "==> theme: leaving the default in place (invariant 1)"
-  wp theme activate "$(wp theme list --status=active --field=name 2>/dev/null | head -1 | grep -qi quire && echo twentytwentyfive || wp theme list --field=name | grep '^twentytwenty' | tail -1)" >/dev/null 2>&1 || true
-  wp theme list --field=name --status=active
+  echo "==> theme: $active, left alone (invariant 1)"
 fi
 
 echo "==> settings"
