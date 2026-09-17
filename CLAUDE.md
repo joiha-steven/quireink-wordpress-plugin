@@ -53,6 +53,20 @@ dev/up.sh        # WordPress on http://localhost:8098, admin / admin
 tools/shot.sh <url> .tmp/shots/<name>.png
 ```
 
+**And measure the writing screen rather than squinting at it.** `tools/screen-audit.js` is
+served by the dev stack; open a post in Quire Ink and run it in the console:
+
+```js
+eval( await ( await fetch( '/qi-tools/screen-audit.js?t=' + Date.now(), { cache: 'no-store' } ) ).text() )
+```
+
+One column with two edges, one ladder of gaps read out of the stylesheet's own
+`--quireink-*`, no key clipped off the strip, no sideways scroll, contrast, target sizes, a
+focus rule that draws something. Run it at **1440, 1024 and 600** — the second is where the
+engine's `lg:` variants switch and the third is WordPress's one-column admin. It reads the
+TEXT edge, not the box: the first version measured boxes and passed a screen with four
+different left edges.
+
 `shot.sh` runs a fresh headless Chrome, so a scheme you switched in YOUR browser is not in its.
 Set `quireink_default_scheme` as a theme mod and put it back, or the file is named for a state
 it does not contain: `docs/shots/paired-dark.png` was captured light the first time.
@@ -86,6 +100,8 @@ is the only way to see the pairing work.
 | The same words got a different stroke | `assets/js/seed.js` — the hash is of the GESTURE'S SOURCE, `==x==` and not `x`; `check:contract` probes the 28-character boundary |
 | Nothing is styled although the markup is right | the `pen` class on `<body>`; `inc/enqueue.php` adds it |
 | The toolbar is unstyled, or a bar will not hide | `tools/editor-css.ts` — the subset cut from the engine's Tailwind build |
+| A bar's keys collapse to a glyph | `assets/css/screen.css` — the furniture preflight must weigh NOTHING (`:where()`), or it beats the `px-2` it sits under |
+| The column looks ragged | run `tools/screen-audit.js`; it names the edge and the gap |
 | The writing screen is blank, or throws | `quire-ink-pen/assets/js/app.js`, then `inc/compose.php` |
 | The block editor opened when Quire Ink was asked for | `inc/compose.php` `quireink_pen_composing` — `?quireink=1`, or a Markdown source already stored |
 | The writing is in wp-admin's sans, not a serif | `assets/css/screen.css` — the inheritance reset; then `tools/extract.ts`, which emits the reading tokens |

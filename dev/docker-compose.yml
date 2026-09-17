@@ -57,6 +57,9 @@ services:
       # never write to it.
       - ../../quireink-wordpress-theme/quire-ink:/var/www/html/wp-content/themes/quire-ink:ro
       - ./php-dev.ini:/usr/local/etc/php/conf.d/zz-quireink-dev.ini:ro
+      # The dev tools, served so `tools/screen-audit.js` can be fetched and run in the page
+      # without being pasted. READ ONLY, and outside the plugin: it is not shipped.
+      - ../tools:/var/www/html/qi-tools:ro
 
   cli:
     image: wordpress:cli-php8.3

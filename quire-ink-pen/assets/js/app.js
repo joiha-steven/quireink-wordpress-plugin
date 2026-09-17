@@ -197,16 +197,13 @@
 		onPickImage: onPickImage,
 		onPickGallery: onPickGallery,
 	} );
+	// The bubble bar is built and placed by the engine, which appends it BESIDE the writing
+	// surface — inside `[data-quireink-sheet]` — so that its `z-40` is compared against the
+	// toolbar's `z-10` rather than against the whole page. It is left exactly where the engine
+	// put it, and `screen.css` finds it by that position rather than by a class: this used to
+	// tag it on the next animation frame and the tag never landed, so the bar had no reset and
+	// its keys wore the browser's own button padding.
 	var bubble = engine.mountBubbleBar( editor, engine.sheetWords, askLink );
-
-	// The bubble bar is built and placed by the engine, which appends it beside the writing
-	// surface so its `z-40` is compared against the toolbar's `z-10` rather than against the
-	// whole page. It stays there; it only gains the class the furniture reset looks for, and
-	// it gains it on the next frame because the plugin that appends it runs after this call.
-	window.requestAnimationFrame( function () {
-		var bar = sheet.querySelector( '.z-40' );
-		if ( bar ) { bar.classList.add( 'quireink-pen-furniture' ); }
-	} );
 
 	// Both bars are told how much fixed furniture is above them, MEASURED rather than assumed:
 	// the admin bar is 32px on a desktop and 46px on a phone, and a plugin that writes either

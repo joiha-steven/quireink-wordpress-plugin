@@ -102,6 +102,38 @@ preflight is written out by hand in `screen.css` for the three elements that nee
 
 Measured against the published page, which carries only the pen sheet, both are now equal.
 
+## The grid, and the thing that measures it
+
+One column, two edges, one ladder. Declared once in `assets/css/screen.css` as
+`--quireink-column`, `--quireink-gutter` and three steps, and measured by
+`tools/screen-audit.js`, which reads those same custom properties off the page so the check and
+the stylesheet cannot drift apart.
+
+| | |
+|---|---|
+| column | 704px: the engine's 672px measure plus the 16px the writing surface carries inside itself. Everything else in the column takes that 16 as padding, so every line of text begins and ends on the same two pixels |
+| title → permalink | 12 (the title's own leading, written down as padding rather than left invisible inside the input's box) |
+| permalink → notice → strip | 20 |
+| strip → writing, writing → closing line | 24 |
+| card edge | 32, to the TEXT: the card's top padding is 32 minus the title's 7px of leading |
+| room under the last line | 96, and it is INSIDE the editor, so clicking it puts the caret at the end |
+
+Before that ladder existed the column had four left edges — 299, 309, 315, 315 — and five
+unrelated gaps: 8, 5, 16, 0, 77. The boxes lined up perfectly; the words did not, which is why
+the audit reads the text edge (the border box less its border and its padding) and not the box.
+
+**Three specificity traps, all in this one screen**, and each cost a release-shaped bug:
+
+| written | weighed | what it took over |
+|---|---|---|
+| `:is(#quireink-pen-paper, body.…)` on the generated cut | 1-0-0 | Tailwind's `*{margin:0}` tied with `#wpcontent{margin-left:160px}` and the whole admin slid under the menu |
+| `.prose mark{--ink-stroke:…}` under that id | 1-1-1 | `mark[data-ink=green][data-pen="71"]` at 0-3-1 — every ink drew the default yellow |
+| the furniture's preflight at its natural weight | 1-2-0 | `#quireink-pen-paper .px-2` at 1-1-0 — the bubble bar's keys came out 9×20 with no padding |
+
+The rule that falls out of all three: **a reset weighs nothing and a scope weighs as little as
+it can.** The furniture's preflight is wrapped in `:where()`; the column's members are written
+as a comma list rather than an `:is()` with an id in it.
+
 ## What the field holds
 
 `#content` is filled from the document, not typed into, so it has to be refreshed. When:

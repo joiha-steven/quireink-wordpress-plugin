@@ -221,12 +221,13 @@ function quireink_pen_paper( $post ) {
 /**
  * What this post stands to lose, said before it can lose it.
  *
+ * TWO SHAPES, because there are two things to say and only one of them is a warning. A post
+ * whose LAYOUT is about to be replaced gets WordPress's own warning band, open, because it has
+ * to be read. A post that is merely arriving from somewhere else gets one quiet line in the
+ * column, folded. A yellow band for both teaches a reader to look past the one that matters.
+ *
  * Named blocks, not a count and not "some formatting may be lost": a sentence nobody can act
  * on is a sentence nobody reads. See `inc/survey.php` for how the names are found.
- *
- * A `<details>`, because the notice is worth reading once and then it is in the way of the
- * writing for the rest of the session. Open when something is at RISK, folded to one line when
- * it is only telling you where the words came from. No script: `<details>` folds itself.
  *
  * @param WP_Post $post  The post.
  * @param string  $state 'new', 'clean' or 'foreign'.
@@ -238,16 +239,16 @@ function quireink_pen_warning( $post, $state ) {
 
 	$at_risk = quireink_pen_blocks_at_risk( $post->post_content );
 
-	if ( 'foreign' === $state ) {
-		$head = __( 'This post has been edited in WordPress since Quire Ink last saved it.', 'quire-ink-pen' );
-		$body = __( 'What is below is the WordPress version, which is the newer one; the older Markdown source has been set aside.', 'quire-ink-pen' );
-	} elseif ( $at_risk ) {
+	if ( $at_risk ) {
 		$head = __( 'Saving here will replace this post\'s layout.', 'quire-ink-pen' );
 		$body = sprintf(
 			/* translators: %s: comma-separated list of block names. */
 			__( 'This post was built in WordPress and uses: %s. Markdown holds words, not layout, so those blocks are here as plain text and saving would keep them that way.', 'quire-ink-pen' ),
 			implode( ', ', $at_risk )
 		);
+	} elseif ( 'foreign' === $state ) {
+		$head = __( 'Edited in WordPress since Quire Ink last saved it.', 'quire-ink-pen' );
+		$body = __( 'What is below is the WordPress version, which is the newer one; the older Markdown source has been set aside.', 'quire-ink-pen' );
 	} elseif ( '' !== trim( $post->post_content ) ) {
 		$head = __( 'This post was not written in Quire Ink.', 'quire-ink-pen' );
 		$body = __( 'Its HTML has been brought in as it stands; from the first save on, the Markdown is the source.', 'quire-ink-pen' );
@@ -255,7 +256,8 @@ function quireink_pen_warning( $post, $state ) {
 		return;
 	}
 
-	$classes = 'quireink-pen-warning notice notice-warning inline' . ( $at_risk ? ' quireink-pen-warning-loud' : '' );
+	// The loud one wears WordPress's warning band and opens itself. The quiet one is a line.
+	$classes = $at_risk ? 'quireink-pen-warning notice notice-warning inline' : 'quireink-pen-quiet';
 	// A boolean attribute, so it is the whole word or nothing. Escaped anyway: an attribute
 	// printed without one is an attribute nobody checked.
 	$open = $at_risk ? 'open' : '';

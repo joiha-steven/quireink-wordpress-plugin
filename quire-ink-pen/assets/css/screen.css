@@ -65,136 +65,267 @@
    classes that assume `margin: 0; padding: 0; border: 0` underneath them, and a `button` left
    with the browser's own `1px 6px` is a key 12px wider than the strip was measured for.
 
-   ⚠️ IT MUST NOT REACH THE WRITING. The generated sheet used to carry Tailwind's own
-   `*{margin:0;padding:0;border:0}`, and scoped under the paper's id that is a 1-0-0 rule
-   against the pen's `mark[data-pen="N"]{padding:0 .3em 0 .15em}` at 0-2-1. It won, and it
-   flattened the overhang that makes a stroke run past the word it covers — measured against
-   the published page, which carries only the pen sheet: padding 0 against 2.7px, margin 0
-   against -1.98px, on every mark and every underline. Nothing failed. The strokes were simply
-   the wrong shape.
+   ⚠️ EVERY SELECTOR IS IN `:where()`, SO THE WHOLE BLOCK WEIGHS NOTHING. That is what a
+   preflight is: it beats the browser's own defaults and loses to every utility above it.
+   Written at its natural weight — an id and two classes — it beat `#quireink-pen-paper .px-2`
+   and the bubble bar's keys came out 9×20 with their padding gone. Tailwind ships this rule at
+   `*`, specificity zero, for exactly this reason.
 
-   `.quireink-pen-furniture` is put on the bubble bar and the "/" menu by `app.js`; the engine
-   builds them and has no idea this screen exists. */
-#quireink-pen-paper :is( .quireink-pen-tools, .quireink-pen-furniture ),
-#quireink-pen-paper :is( .quireink-pen-tools, .quireink-pen-furniture ) *,
-#quireink-pen-paper :is( .quireink-pen-tools, .quireink-pen-furniture ) ::before,
-#quireink-pen-paper :is( .quireink-pen-tools, .quireink-pen-furniture ) ::after {
+   ⚠️ AND IT MUST NOT REACH THE WRITING. The generated sheet used to carry Tailwind's own `*`
+   version, and scoped under the paper's id that is a 1-0-0 rule against the pen's
+   `mark[data-pen="N"]{padding:0 .3em 0 .15em}` at 0-2-1. It won, and it flattened the overhang
+   that makes a stroke run past the word it covers — measured against the published page, which
+   carries only the pen sheet: padding 0 against 2.7px, margin 0 against -1.98px, on every mark
+   and every underline. Nothing failed. The strokes were simply the wrong shape.
+
+   THREE WAYS OF NAMING THE SAME THREE THINGS, because the engine builds them and has no idea
+   this screen exists:
+     `.quireink-pen-tools`                       the slot this plugin prints for the strip
+     `.quireink-pen-sheet > :not(.ProseMirror)`  the bubble bar, which the engine appends
+                                                 beside the writing surface so its `z-40` is
+                                                 compared against the toolbar's `z-10`. Found
+                                                 by POSITION: a class added from `app.js` on
+                                                 the next animation frame never landed, and the
+                                                 bar went without a reset at all.
+     `.quireink-pen-furniture`                   the "/" menu, which `app.js` moves here from
+                                                 `<body>` and tags as it moves it. */
+:where( #quireink-pen-paper ) :where( .quireink-pen-tools, .quireink-pen-furniture, .quireink-pen-sheet > :not( .ProseMirror ) ),
+:where( #quireink-pen-paper ) :where( .quireink-pen-tools, .quireink-pen-furniture, .quireink-pen-sheet > :not( .ProseMirror ) ) *,
+:where( #quireink-pen-paper ) :where( .quireink-pen-tools, .quireink-pen-furniture, .quireink-pen-sheet > :not( .ProseMirror ) ) ::before,
+:where( #quireink-pen-paper ) :where( .quireink-pen-tools, .quireink-pen-furniture, .quireink-pen-sheet > :not( .ProseMirror ) ) ::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
   border: 0 solid;
 }
 
-/* ── the paper ────────────────────────────────────────────────────────────────────────── */
+/* ── the grid this screen is built on ─────────────────────────────────────────────────── */
 
-/* ⚠️ THE MEASURE IS ON THE WRITING, NOT ON THE COLUMN, and the two are different widths on
-   purpose. 672px of text is 18px on a ~66-character line, which is what the reading tokens
-   were sized against; wider is not more room, it is a line the eye loses its place on. The
-   BUTTON STRIP is not text and wants the whole card: squeezed to the measure it wrapped onto
-   two rows and the writing surface looked like a form. The blog engine's own sheet is built
-   the same way — a full-width card with a narrow column inside it. */
-.quireink-pen-composing :is( #titlediv, .quireink-pen-sheet, .quireink-pen-warning,
-                             .quireink-pen-hint, .quireink-pen-fallback ) {
-  max-width: 44rem;
-  margin-left: auto;
-  margin-right: auto;
-  /* The notice has a 4px bar and 12px of padding, and without this it sat 14px proud of the
-     writing on each side. Everything in this column lines up on the same two edges or the
-     column is not a column. */
-  box-sizing: border-box;
+/* ONE COLUMN, TWO EDGES, ONE LADDER OF GAPS. Declared here and nowhere else, because a screen
+   with four left edges is the thing people mean when they say a screen looks unfinished — and
+   it had four: 299 for the title, 309 for the permalink, 315 for the notice and the writing,
+   and 299 again for the closing line. Measured on the TEXT, not on the boxes; the boxes agreed
+   perfectly and the words did not.
+
+   `--quireink-column` is 704px, which is the engine's own 672px measure plus the 16px the
+   writing surface carries inside itself (`prose … px-4`). Everything else in the column takes
+   that 16px as padding, so every line of text on this screen begins and ends on the same two
+   pixels as the writing does. */
+.quireink-pen-composing {
+  --quireink-column: 44rem;
+  --quireink-gutter: 1rem;
+  /* Three steps and no others: 20 between parts, 24 around the writing, 32 at the card's own
+     edge. Things that belong to each other — the title and its permalink — take no step at
+     all; the leading already written into the title is the gap. */
+  --quireink-step: 20px;
+  --quireink-wide: 24px;
+  --quireink-edge: 32px;
+  /* The room under the last line, INSIDE the writing surface so it is still writing. */
+  --quireink-room: 96px;
 }
 
-.quireink-pen-compose {
-  margin: 0 0 1rem;
-}
+/* ── the card ─────────────────────────────────────────────────────────────────────────── */
 
-/* The frame is WordPress's, because on this screen WordPress is the page: a white card with
-   the same hairline `.postbox` wears (`#c3c4c7`, `wp-admin/css/common.css`). The blog engine's
-   own card is a different product's chrome and would read as a box inside a box. */
-.quireink-pen-paper {
+/* ONE FRAME, AND THE TITLE IS INSIDE IT. The card used to begin below the title and the
+   notice, so the two of them floated on the grey page above a wider white box they were
+   indented from — which is what "why is the top indented and small" was. `#post-body-content`
+   is WordPress's own wrapper for the title, the permalink and everything this plugin prints,
+   so making it the paper puts the whole of the writing in one rectangle.
+
+   The frame is WordPress's: white with the hairline `.postbox` wears (`#c3c4c7`,
+   `wp-admin/css/common.css`). The blog engine's own card is a different product's chrome and
+   here it would read as a box inside a box. */
+.quireink-pen-composing #post-body-content {
   background: #fff;
   border: 1px solid #c3c4c7;
   border-radius: 4px;
+  /* No side padding: the button strip runs edge to edge, and the column centres itself.
+     The top is the edge step MINUS the 7px of leading the title carries, so the distance from
+     the card's border to the first pixel of the headline is the edge step itself. The closing
+     line at the bottom sits on its own box edge and takes the step whole. */
+  padding: calc( var(--quireink-edge) - 7px ) 0 var(--quireink-edge);
+  margin-bottom: var(--quireink-step);
 }
 
-/* The writing itself. `.prose` from the generated sheet does the typography; this gives it the
-   page it is set on, and takes away the focus ring a div with `contenteditable` collects. */
-.quireink-pen-sheet .ProseMirror,
-.quireink-pen-sheet .ProseMirror:focus-visible {
-  outline: none;
+/* Every member of the column is the same width and centred. `box-sizing` because the warning
+   band carries a 4px bar and would otherwise sit proud of the writing.
+
+   ⚠️ NOT `:is(#titlediv, .foo, …)`. `:is()` takes the HIGHEST specificity of its arguments, so
+   one id in the list lends 1-0-0 to every class beside it — and the override below, written as
+   a plain class, then lost to it silently. The writing came out 16px narrower than everything
+   above it and the boxes all agreed. Same trap that put the whole admin page under the menu
+   yesterday, now in this file. A comma list gives each selector its own weight. */
+.quireink-pen-composing #titlediv,
+.quireink-pen-composing .quireink-pen-quiet,
+.quireink-pen-composing .quireink-pen-warning,
+.quireink-pen-composing .quireink-pen-sheet,
+.quireink-pen-composing .quireink-pen-hint,
+.quireink-pen-composing .quireink-pen-fallback {
+  box-sizing: border-box;
+  max-width: var(--quireink-column);
+  margin-left: auto;
+  margin-right: auto;
 }
 
-/* Room under the last line, so a writer can put the end of a post in the middle of the screen
-   rather than at the bottom edge of it. */
-.quireink-pen-sheet {
-  padding-bottom: 4rem;
+/* The gutter — every member except the writing, which brings its own inside `prose … px-4`.
+   That is how a line of body text lands on the same pixel as the title above it. */
+.quireink-pen-composing #titlediv,
+.quireink-pen-composing .quireink-pen-quiet,
+.quireink-pen-composing .quireink-pen-hint,
+.quireink-pen-composing .quireink-pen-fallback {
+  padding-left: var(--quireink-gutter);
+  padding-right: var(--quireink-gutter);
 }
 
-/* ── the title ────────────────────────────────────────────────────────────────────────── */
+/* ── the title and its permalink ──────────────────────────────────────────────────────── */
 
-/* WordPress draws the "Add title" prompt as a LABEL laid over the field, not as a placeholder,
-   and it keeps its own size and padding: measured 22.1px of the admin sans with 10px of
-   padding, over a 32px Literata field with none. On an empty post that is what a writer sees
-   first, and it read as a small indented line of the wrong typeface floating above the paper.
-   It has to be the same words in the same place the typing will appear. */
-.quireink-pen-composing #title-prompt-text {
-  font-family: var(--font-reading, Georgia, 'Times New Roman', serif);
-  font-size: 2rem;
-  font-weight: 400;
-  font-style: italic;
-  line-height: 1.2;
-  padding: 0.75rem 0 0.25rem;
-  opacity: 0.35;
+.quireink-pen-composing #titlediv {
+  margin-bottom: var(--quireink-step);
 }
 
 /* WordPress's own field, in the writing's face rather than the form's. It is the headline of
-   the piece, not a row in a settings screen, and it is above the paper in the markup already
-   — so it only needs to stop looking like a text input. */
+   the piece, not a row in a settings screen, so it only has to stop looking like a text input.
+   No padding: `#titlediv` holds the gutter for the whole title block. */
 .quireink-pen-composing #titlediv #title {
   font-family: var(--font-reading, Georgia, 'Times New Roman', serif);
   font-size: 2rem;
   font-weight: var(--fw-title, 700);
-  line-height: 1.2;
   letter-spacing: -0.01em;
   color: var(--c-heading, #1a1919);
   background: transparent;
   border: 0;
   box-shadow: none;
-  padding: 0.75rem 0 0.25rem;
+  /* ⚠️ THE LEADING IS WRITTEN DOWN, NOT LEFT INSIDE THE BOX. An `<input>` takes its height
+     from the font's own ascent and descent, not from `line-height`: Literata at 32px makes a
+     54.4px box around a 40px line and centres the line in it, so there are 7.2px of invisible
+     slack above and below that every margin around the title then has to guess at. Writing it
+     as padding changes nothing on screen and puts the number where it can be measured — and
+     the card's top padding below is 32 minus this 7, so the title's first pixel sits exactly
+     one edge-step from the card's border. */
+  line-height: 1.25;
+  min-height: 0;
+  padding: 7px 0;
+  /* 7 of leading plus 5 is the 12 between a headline and its caption. WordPress's own 3px is
+     replaced rather than added to. */
+  margin: 0 0 5px;
+}
+
+/* A keyboard has to be able to see where it is, and the field has no border to thicken. A rule
+   under the title is the quietest thing that still answers that.
+
+   WordPress's own focus blue, not `--c-accent`: the default palette's accent is #1a1919, and a
+   near-black rule under a near-black title is a focus ring nobody can see. This is a WordPress
+   form field on a WordPress screen and it takes the host's colour. */
+.quireink-pen-composing #titlediv #title:focus {
+  box-shadow: 0 2px 0 -1px #2271b1;
+  outline: none;
+}
+
+/* WordPress draws the prompt as a LABEL laid over the field, not as a placeholder, and it keeps
+   its own size and padding: measured 22.1px of the admin sans with 10px of padding over a 32px
+   Literata field with none. On an empty post that is the first thing a writer sees, and it read
+   as a small indented line in the wrong typeface. Same words, same place, same face. */
+.quireink-pen-composing #title-prompt-text {
+  font-family: var(--font-reading, Georgia, 'Times New Roman', serif);
+  font-size: 2rem;
+  font-weight: 400;
+  font-style: italic;
+  line-height: 1.25;
+  /* The same 7px of leading the field carries, so the prompt and the typing that replaces it
+     sit on the same pixel. */
+  padding: 7px 0;
+  opacity: 0.3;
 }
 
 .quireink-pen-composing #titlediv #title::placeholder {
   font-style: italic;
   font-weight: 400;
-  opacity: 0.45;
+  opacity: 0.3;
 }
 
-.quireink-pen-composing #titlediv #title:focus {
-  box-shadow: none;
+/* The permalink belongs to the title and sits under it, at the column's own edge rather than
+   at WordPress's 10px. */
+/* The permalink belongs to the title: the gap above it is the title's own declared leading and
+   nothing is added to it. */
+.quireink-pen-composing #edit-slug-box {
+  padding: 0;
+  margin-top: 0;
+  color: var(--c-meta, #6a6a70);
+}
+
+/* ── the writing ──────────────────────────────────────────────────────────────────────── */
+
+/* `.prose` from the generated sheet does the typography; this gives it the page it is set on,
+   and takes away the ring a `contenteditable` div collects. The writing surface IS the focus
+   indicator: a caret in it is unmistakable. */
+.quireink-pen-sheet .ProseMirror,
+.quireink-pen-sheet .ProseMirror:focus-visible {
   outline: none;
+}
+
+/* ⚠️ THE ROOM UNDER THE LAST LINE GOES INSIDE THE EDITOR, NOT UNDER IT. It was 192px of
+   padding on the wrapper: white, the exact colour of the page, and dead — clicking it did
+   nothing, because ProseMirror only answers for its own element. A writer who clicks below the
+   last line expects the caret at the end of the post. Inside the surface, that is what happens.
+
+   96px, which is about three lines: enough that the end of a post sits in the middle of the
+   screen rather than at the bottom edge of it. */
+#quireink-pen-paper .ProseMirror {
+  padding-bottom: var(--quireink-room);
 }
 
 /* ── the button strip ─────────────────────────────────────────────────────────────────── */
 
 /* ⚠️ THE KEYS ARE NARROWER HERE THAN IN QUIRE INK, and it is a measurement rather than a
-   taste. The engine builds the strip as five groups: 226 + 226 + 112 + 112 + 226 = 902px, with
+   taste. The engine builds the strip as five groups: 226 + 226 + 112 + 112 + 226 = 902px with
    12px between them, so it wants ~950px. WordPress reserves 300px of this screen for the
-   Publish box and its meta boxes, which leaves the card 938px and the strip 904px inside its
-   own padding. Six per cent short, so one group wrapped and the strip stood two rows tall —
-   96px of chrome above the writing, at every window size a laptop has.
+   Publish box, which leaves the card 938 and the strip 904 inside its own padding. Six per cent
+   short, so one group wrapped and the strip stood two rows tall — 96px of chrome above the
+   writing, at every window size a laptop has.
 
    Only the WIDTH moves: `min-w-9` (36px) becomes 32px, which takes 96px out of 24 keys and
-   leaves ~50px of room. The height stays 36px, so the strip is the same depth Quire Ink's is
-   and a key is still a comfortable target. wp-admin's own buttons are 30px.
+   leaves ~50px of room. The height stays 36px, so the strip is the same depth Quire Ink's is.
+   wp-admin's own buttons are 30px. A key with a wide label still grows past 32px, because this
+   is a minimum and not a size.
 
-   A key with a wide label — a long word in another locale — still grows past 32px, because
-   this is a minimum and not a size.
-
-   The selector carries the paper's id because the rule it is arguing with does: the generated
-   sheet is scoped `#quireink-pen-paper`, so `.min-w-9` there is 1-1-0 and a plain
+   The selector carries the paper's id because the rule it argues with does: the generated sheet
+   is scoped `#quireink-pen-paper`, so `.min-w-9` there is 1-1-0 and a plain
    `.quireink-pen-tools button` at 0-1-1 loses without a word. */
 #quireink-pen-paper .quireink-pen-tools button {
   min-width: 2rem;
+}
+
+/* ⚠️ THE KEYS HAVE NO FOCUS RING OF THEIR OWN, so this gives them one.
+
+   The engine has one — `.admin-shell :focus-visible{outline:2px solid #737373;outline-offset:2px}`
+   — and it hangs off a class its own admin puts on `<body>`. This screen has no business adding
+   `admin-shell` to wp-admin's body, so the ring never arrives: a keyboard user tabbing through
+   24 keys saw nothing move. wp-admin styles `.wp-core-ui .button`, not a bare `button`, so
+   there is nothing underneath either.
+
+   WordPress's focus blue, because this is a WordPress screen and that is the convention a
+   person using it already knows. 1px of offset, not 2: a 32px key inside a 36px strip has no
+   room for more. */
+#quireink-pen-paper :is( .quireink-pen-tools, .quireink-pen-furniture, .quireink-pen-sheet > :not(.ProseMirror) ) :focus-visible {
+  outline: 2px solid #2271b1;
+  outline-offset: 1px;
+}
+
+/* ⚠️ IT WRAPS AT EVERY WIDTH HERE, AND SCROLLS AT NONE. Below its own `lg` breakpoint the
+   engine's strip becomes one non-wrapping row inside `overflow-x: auto`, with `no-scrollbar`
+   hiding the bar — right on a phone, where a strip is swiped, and wrong inside a WordPress
+   form on a laptop. Measured at 782px: three keys off the right edge, invisible, with nothing
+   on screen saying they were there.
+
+   Two rows beats three hidden keys. `1-1-1` because the rule it argues with is the generated
+   sheet's `lg:` variant at 1-1-0. */
+#quireink-pen-paper .quireink-pen-tools > div > div {
+  overflow-x: visible;
+}
+
+#quireink-pen-paper .quireink-pen-tools > div > div > div {
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 /* ⚠️ `display: contents`, AND IT IS THE WHOLE OF WHETHER THE STRIP STAYS PUT.
@@ -203,13 +334,24 @@
    BLOCK. A wrapper exactly as tall as the strip gives it nowhere to travel, so it leaves with
    the first pixel of scroll and the formatting keys are gone for the rest of a long post.
    Removing this box makes `#quireink-pen-paper` the containing block, which is the height of
-   the writing — which is what a writer means by a toolbar. The blog engine's own sheet does
-   the same thing for the same reason, and says so.
+   the writing — which is what a writer means by a toolbar. The blog engine's own sheet does the
+   same thing for the same reason, and says so.
 
    Nothing else belongs here: the strip carries its own `sticky z-10` from the engine's build,
    and its top offset is measured against the admin bar in `app.js`. */
 .quireink-pen-tools {
   display: contents;
+}
+
+/* The strip runs edge to edge inside the card; the writing starts a clear step below it, and
+   the closing line a clear step below that. The writing surface carries 16px of its own on top
+   (`py-4`), so the margin is the rest of the step. */
+.quireink-pen-composing .quireink-pen-sheet {
+  margin-top: 8px;
+}
+
+.quireink-pen-paper {
+  margin-bottom: var(--quireink-wide);
 }
 
 /* Sticky needs an ancestor that is not a scroll container. `#poststuff` and
@@ -222,34 +364,49 @@
 
 /* ── what the page says before the writing starts ─────────────────────────────────────── */
 
-/* A `<details>`, so the notice can be folded away. It is worth reading once and then it is in
-   the way of the writing for the rest of the session; a warning you cannot put down is a
-   warning people learn to look past. Open by default only when something is at risk. */
+/* TWO SHAPES, because there are two things to say and only one of them is a warning.
+
+   A post whose LAYOUT is about to be replaced gets WordPress's own warning band, open, because
+   it has to be read. A post that is merely arriving from somewhere else gets one quiet line in
+   the column, folded, in the same grey the permalink uses. A yellow band for both taught a
+   reader to look past the one that mattered. */
 .quireink-pen-warning {
-  margin: 0 0 1rem;
-  padding: 10px 12px;
-}
-
-.quireink-pen-warning summary {
-  cursor: pointer;
-  font-weight: 600;
-  list-style-position: outside;
-}
-
-.quireink-pen-warning summary::marker {
-  color: #8c8f94;
-}
-
-.quireink-pen-warning p {
-  margin: 0.6em 0 0;
-}
-
-.quireink-pen-warning-loud {
+  margin: 0 0 var(--quireink-step);
+  /* The 4px bar plus 12px lands the text on the column's edge; the right side takes the
+     gutter whole. Both measured against the writing: 315 and 987. */
+  padding: 12px var(--quireink-gutter) 12px 12px;
   border-left-color: #d63638;
 }
 
+.quireink-pen-quiet {
+  margin: 0 0 var(--quireink-step);
+  color: var(--c-meta, #6a6a70);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* A summary is a control: it folds the notice. 24px is the floor for something a finger or a
+   shaky hand has to hit, and a 13px line on its own is 20.8. */
+:is( .quireink-pen-warning, .quireink-pen-quiet ) summary {
+  cursor: pointer;
+  min-height: 24px;
+  line-height: 24px;
+}
+
+.quireink-pen-warning summary {
+  font-weight: 600;
+}
+
+:is( .quireink-pen-warning, .quireink-pen-quiet ) summary::marker {
+  color: #8c8f94;
+}
+
+:is( .quireink-pen-warning, .quireink-pen-quiet ) p {
+  margin: 0.6em 0 0;
+}
+
 .quireink-pen-hint {
-  margin: 0.75rem 0 0;
+  margin: 0;
   color: var(--c-meta, #6a6a70);
   font-size: 13px;
 }
