@@ -8,6 +8,13 @@
 // Blunt means it can be wrong, so there is an escape hatch and it is a LOUD one: a
 // `phpcs:ignore` comment on the line, which has to say why. Two lines carry it today and both
 // print markup that was escaped piece by piece a few lines above.
+//
+// AND THE OTHER DIRECTION, which is the same boundary read backwards: anything written into
+// post meta has to be SLASHED. `update_metadata()` calls `wp_unslash()` on the value it is
+// given (`wp-includes/meta.php`), so a value already unslashed at the request boundary loses
+// one level of backslashes on the way to the database. Markdown is a language made of
+// backslashes. Measured: `\## a heading` was stored as `## a heading`, and the next time the
+// post was opened that paragraph had turned into a heading. Nothing said so.
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -38,11 +45,56 @@ for (const file of files) {
   })
 }
 
-console.log(`  scanned ${files.length} PHP file(s) in ${ROOT}/`)
-if (problems.length === 0) {
+// ── meta writes carry their slashes ───────────────────────────────────────────────────────
+//
+// The ARGUMENTS are read, not the line: `update_post_meta(` with its value three lines down is
+// the shape this repository actually writes, and a line-at-a-time reader called that a fault
+// and the comment explaining the rule another one. Two false alarms in the first run, which is
+// how a check earns the habit of being ignored.
+const CALL = /\b(update_post_meta|add_post_meta|update_metadata|add_metadata)\s*\(/g
+const SLASHED = /wp_slash\s*\(|quireink_pen_hash\s*\(/
+const unslashed: string[] = []
+let metaWrites = 0
+
+/** The text between the parentheses of a call whose `(` is at `open`. */
+function argsAt(text: string, open: number): string {
+  let depth = 0
+  for (let i = open; i < text.length; i++) {
+    if (text[i] === '(') depth++
+    else if (text[i] === ')') { depth--; if (depth === 0) return text.slice(open + 1, i) }
+  }
+  return ''
+}
+
+for (const file of files) {
+  const text = readFileSync(file, 'utf8')
+  for (const m of text.matchAll(CALL)) {
+    const at = m.index!
+    // A mention inside a comment is prose about the rule, not a call that breaks it.
+    const lineStart = text.lastIndexOf('\n', at) + 1
+    const before = text.slice(lineStart, at).trimStart()
+    if (before.startsWith('*') || before.startsWith('//') || before.startsWith('/*')) continue
+    metaWrites++
+    const args = argsAt(text, at + m[0].length - 1)
+    // A literal value is not a hazard; anything else is a string on its way from a request
+    // into the database with one level of escaping missing.
+    const value = args.split(',')[2] ?? ''
+    if (SLASHED.test(args) || /^\s*(['"]|\d|true|false)/.test(value)) continue
+    unslashed.push(`${file}:${text.slice(0, at).split('\n').length}: ${m[1]}(…${value.trim().slice(0, 60)})`)
+  }
+}
+
+console.log(`  scanned ${files.length} PHP file(s) in ${ROOT}/, ${metaWrites} meta write(s)`)
+if (problems.length === 0 && unslashed.length === 0) {
   console.log('✓ check:escape: ok')
 } else {
-  console.log(`✗ check:escape: ${problems.length} unescaped output(s)`)
-  for (const p of problems) console.log(`  · ${p}`)
+  if (problems.length) {
+    console.log(`✗ check:escape: ${problems.length} unescaped output(s)`)
+    for (const p of problems) console.log(`  · ${p}`)
+  }
+  if (unslashed.length) {
+    console.log(`✗ check:escape: ${unslashed.length} meta write(s) with no wp_slash()`)
+    for (const p of unslashed) console.log(`  · ${p}`)
+  }
   process.exit(1)
 }

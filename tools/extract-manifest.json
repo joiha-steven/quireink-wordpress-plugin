@@ -21,8 +21,8 @@
   },
   "engine": {
     "path": "quire-ink-pen/assets/js/quireink-engine.js",
-    "bytes": 683199,
-    "gzip": 219717,
+    "bytes": 692890,
+    "gzip": 223200,
     "modules": 1,
     "api": [
       "DEFAULT_INK",
@@ -31,18 +31,20 @@
       "htmlToNodes",
       "mountBubbleBar",
       "mountToolbar",
+      "openSlashMenu",
       "parse",
       "penSeed",
       "schema",
       "sheetWords",
       "toHtml",
-      "words"
+      "words",
+      "writingSurface"
     ]
   },
   "editor_css": {
     "path": "quire-ink-pen/assets/css/quireink-editor.css",
-    "bytes": 30935,
-    "gzip": 5445
+    "bytes": 62984,
+    "gzip": 11928
   },
   "seed_probe": {
     "a": 60,

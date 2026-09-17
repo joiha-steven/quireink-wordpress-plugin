@@ -11,8 +11,9 @@
  * A dual write drifts; that is what dual writes do. So a third value exists to catch it:
  * `_quireink_html_hash` is the hash of the HTML this plugin wrote. If `post_content` no longer
  * hashes to it, somebody edited the post in Gutenberg (or anywhere else) and the Markdown is
- * now stale. The editor REFUSES TO SILENTLY OVERWRITE that, because the alternative is
- * throwing away work the author can see on screen and cannot get back.
+ * now stale — so the screen opens from `post_content` instead and says so. The stale source is
+ * left in place rather than deleted; it is the only record of what was written here, and it
+ * costs nothing to keep.
  *
  * @package QuireInkPen
  */
@@ -25,9 +26,9 @@ const QUIREINK_PEN_META_HASH = '_quireink_html_hash';
 /**
  * Register the meta so REST and revisions know about it.
  *
- * `show_in_rest` is false: the source is read and written by this plugin's own authenticated
- * endpoint, and exposing a second write path to the same field would mean two places to get
- * the hash bookkeeping right.
+ * `show_in_rest` is false: the source is written in one place, from the post form's own save,
+ * and a second write path to the same field would be a second place to get the hash
+ * bookkeeping right.
  */
 function quireink_pen_register_meta() {
 	foreach ( array( QUIREINK_PEN_META_MD, QUIREINK_PEN_META_HASH ) as $key ) {
@@ -98,32 +99,35 @@ function quireink_pen_state( $post_id ) {
 }
 
 /**
- * Write both copies and the hash, in one place so they cannot be written separately.
+ * Remember the Markdown a save came from, and what WordPress made of it.
+ *
+ * Called from `save_post`, AFTER WordPress has written `post_content` — which is why there is
+ * no `wp_update_post` here and no read-back to argue about. Whatever is in the post now is
+ * what every reader will see, so that is what gets hashed.
+ *
+ * ⚠️ `wp_slash` ON THE WAY IN, AND IT IS NOT DECORATION. `update_metadata()` calls
+ * `wp_unslash()` on the value itself (`wp-includes/meta.php`), so it wants SLASHED data — and
+ * this function is handed the true string, unslashed at the request boundary where it should
+ * be. Without the re-slash the value is unslashed twice and one level of backslashes is eaten.
+ * Markdown is a language made of backslashes: `\#` is a literal hash, `\*` a literal asterisk,
+ * and a trailing `\` is a line break. Measured: a paragraph serialised as `\## a heading` was
+ * stored as `## a heading`, and the next time the post was opened that paragraph had become a
+ * heading. Nothing said so — the post looked fine until it was reopened.
  *
  * @param int    $post_id  Post ID.
- * @param string $markdown The source.
- * @param string $html     The render, ALREADY SANITISED by the caller.
- * @return true|WP_Error
+ * @param string $markdown The source, exactly as the editor serialised it, already unslashed.
  */
-function quireink_pen_save( $post_id, $markdown, $html ) {
-	$updated = wp_update_post(
-		array(
-			'ID'           => $post_id,
-			'post_content' => $html,
-		),
-		true
-	);
-	if ( is_wp_error( $updated ) ) {
-		return $updated;
+function quireink_pen_remember( $post_id, $markdown ) {
+	if ( '' === trim( $markdown ) ) {
+		// An empty save is a post emptied on purpose or a script that never mounted. Either
+		// way, claiming an empty Markdown source for a post that may still have HTML in it
+		// would make the next load open a blank sheet over the author's words.
+		return;
 	}
-
-	// Read back rather than hashing what was sent: `wp_update_post` runs `content_save_pre` and
-	// the kses filters, so what is STORED is not always what was handed over, and a hash of the
-	// input would report 'foreign' on the very next load.
-	$stored = get_post_field( 'post_content', $post_id );
-
-	update_post_meta( $post_id, QUIREINK_PEN_META_MD, $markdown );
-	update_post_meta( $post_id, QUIREINK_PEN_META_HASH, quireink_pen_hash( $stored ) );
-
-	return true;
+	update_post_meta( $post_id, QUIREINK_PEN_META_MD, wp_slash( $markdown ) );
+	update_post_meta(
+		$post_id,
+		QUIREINK_PEN_META_HASH,
+		quireink_pen_hash( get_post_field( 'post_content', $post_id ) )
+	);
 }

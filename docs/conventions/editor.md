@@ -62,15 +62,20 @@ here, to the same stylesheet.
 
 ## The writing screen wears the engine's own furniture
 
-`mountToolbar` and `mountBubbleBar` are the blog engine's, brought across by the extractor, so
-a button it gains this gains too. What is written here is only the wiring: the link box is a
-`window.prompt` for now, and pictures come from WordPress's media library rather than the
-engine's picker, because on a WordPress site that is where the writer's pictures already are.
+`mountToolbar`, `mountBubbleBar`, `openSlashMenu` and `writingSurface` are the blog engine's,
+brought across by the extractor, so a button it gains this gains too. `writingSurface` is the
+one worth naming: it carries the editor's `prose` class list, the "/" trigger and the drop and
+paste handlers, and lifting it is what keeps the WordPress screen from growing a second,
+drifting copy of them. It wants a typewriter sound, and gets a silent one.
+
+What is written here is only the wiring: the link box is a `window.prompt` for now, and
+pictures come from WordPress's media library rather than the engine's picker, because on a
+WordPress site that is where the writer's pictures already are.
 
 **Their styling is Tailwind UTILITIES**, so it is not in a file to copy: it is in a 668 KB
-build of the whole admin. `tools/editor-css.ts` reads the class names out of the two component
-sources and keeps the rules that mention them, which came to 31 KB. Three things that cut
-learned the hard way, each now a comment in that file:
+build of the whole admin. `tools/editor-css.ts` reads the class names out of the component
+sources and keeps the rules that mention them, which comes to 56 KB raw and 11.7 KB gzipped.
+Five things that cut learned the hard way, each now a comment in that file:
 
 - **Tailwind 4 puts every utility inside `@layer`.** Skipping unknown at-rules kept 61
   `@property` declarations and almost no rules, and the toolbar rendered as bare text.
@@ -79,6 +84,35 @@ learned the hard way, each now a comment in that file:
 - **The cut has to close over its own variables.** A kept rule reading a dropped
   `--dur-fast` is not an error, it is an animation that never runs. And the closure must
   SKIP what the pen sheet owns, or `--ink-h` at `:root` changes stroke height by 4%.
+- **`.prose` brings the ink with it.** The strokes are written `.prose mark[data-pen="N"]`,
+  300 of them carrying 1,932 URL-encoded colours, and `quireink-pen.css` already has every
+  one. Selectors naming `data-pen`, `data-ink` or `data-form` are dropped from this cut.
+- **`.prose` is all `var()` and the declarations are NOT in the admin build.** In Quire Ink
+  the admin shell inlines the site's own root variables; there is no site here. Cut `.prose`
+  in without `--fs-body`, `--c-text`, `--font-reading` and the rest and every rule resolves to
+  nothing: the writing renders in wp-admin's 13px sans while the stylesheet says otherwise.
+  `tools/extract.ts` RUNS the engine's own emitters on its own defaults and scopes the result
+  to the screen. Nothing there is a colour or a size anybody typed.
+- **The scope needs an id, and it must not be an `:is()` with one in it.** wp-admin styles
+  bare elements and `#poststuff h2{font-size:14px}` cannot be outranked by classes, so the cut
+  is scoped `#quireink-pen-paper`. It was `:is(#quireink-pen-paper, body.…)` for one run:
+  `:is()` takes its highest argument's specificity, which handed Tailwind's preflight
+  `*{margin:0}` a 1-0-0 that tied with `#wpcontent{margin-left:160px}` and won on order. The
+  whole admin page slid under the menu.
+- **Specificity cannot fix inheritance**, and `p{font-size:13px}` in wp-admin is the case.
+  `.prose` sizes the surface and the paragraphs inherit; inheritance loses to any declaration.
+  `screen.css` says `font-size: inherit` on the elements wp-admin declares, at 1-0-1 — above
+  wp-admin, below the generated sheet. See [`docs/writing-screen.md`](../writing-screen.md).
+
+## One field is what WordPress saves
+
+`<textarea name="content">`, and the editor is what fills it. It is refreshed two seconds after
+the last edit, on `before-autosave`, and on submit in the capture phase. Not on every keystroke:
+the blog engine measured a 400ms debounce and took it out, because 400ms is shorter than the
+pause between two sentences and the serialize landed inside every one of them.
+
+[`docs/writing-screen.md`](../writing-screen.md) has the five WordPress facts this leans on and
+what breaks if one of them moves.
 
 ## The seed hash
 

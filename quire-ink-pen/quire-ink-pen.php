@@ -48,9 +48,8 @@ function quireink_pen_asset_version( $rel ) {
 require_once QUIREINK_PEN_DIR . 'inc/marks.php';
 require_once QUIREINK_PEN_DIR . 'inc/survey.php';
 require_once QUIREINK_PEN_DIR . 'inc/store.php';
-require_once QUIREINK_PEN_DIR . 'inc/rest.php';
-require_once QUIREINK_PEN_DIR . 'inc/screen.php';
 require_once QUIREINK_PEN_DIR . 'inc/links.php';
+require_once QUIREINK_PEN_DIR . 'inc/compose.php';
 require_once QUIREINK_PEN_DIR . 'inc/enqueue.php';
 require_once QUIREINK_PEN_DIR . 'inc/editor.php';
 require_once QUIREINK_PEN_DIR . 'inc/kses.php';

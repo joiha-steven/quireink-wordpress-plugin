@@ -19,7 +19,10 @@ const WARN_AT = Math.floor(MAX_LINES * 0.95)
 const GENERATED = [
   { path: 'quire-ink-pen/assets/css/quireink-pen.css', gzipMax: 44_000, note: 'reaches readers' },
   { path: 'quire-ink-pen/assets/js/quireink-engine.js', gzipMax: 240_000, note: 'admin only, on demand' },
-  { path: 'quire-ink-pen/assets/css/quireink-editor.css', gzipMax: 12_000, note: 'admin only, cut from a 668 KB build' },
+  // Raised from 12,000 on 2026-09-17, when the cut grew from the toolbar's buttons to the
+  // whole reading surface: `.prose` and the tokens it reads cost 6,160 B gzip and they are
+  // what makes a WordPress post read like a Quire Ink page rather than like a form field.
+  { path: 'quire-ink-pen/assets/css/quireink-editor.css', gzipMax: 16_000, note: 'admin only, cut from a 668 KB build' },
 ]
 
 const walk = (dir: string): string[] =>

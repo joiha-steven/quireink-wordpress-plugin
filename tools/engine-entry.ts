@@ -10,7 +10,8 @@ import { DOMParser as PMDOMParser } from 'prosemirror-model'
 import { Editor } from '@/admin/editor/editor'
 import { schema } from '@/admin/editor/schema'
 import { mountToolbar, toolbarWords } from '@/admin/components/editor-toolbar'
-import { mountBubbleBar } from '@/admin/components/editor-menus'
+import { mountBubbleBar, openSlashMenu } from '@/admin/components/editor-menus'
+import { writingSurface } from '@/admin/components/editor-surface'
 import { sheetWords } from '@/admin-shared/sheet-wire'
 import adminEn from '@/locales/admin/en'
 import { parse, toHtml } from '@/md'
@@ -51,6 +52,16 @@ function htmlToNodes(html: string): unknown[] {
   // the toolbar above the page and the bubble bar that follows a selection.
   mountToolbar,
   mountBubbleBar,
+  // The "/" menu, which on an empty line is how a writer reaches a table, a picture or a rule
+  // without leaving the keyboard. It is opened by `writingSurface` below and closed by the
+  // function this returns.
+  openSlashMenu,
+  // The writing surface's own `editorProps`: the "/" trigger, the drop and paste handlers, and
+  // the class list that makes the text read like a published article. Lifted rather than
+  // retyped, because `prose max-w-none min-h-[420px] px-4 py-4` is markup and the markup is
+  // upstream's (ADR 0004). The typewriter sound is the one part a WordPress screen has no
+  // business with, so it is handed a silent one.
+  writingSurface,
   // English only (ADR 0006). The words are a plain object, so a host that wants another
   // language hands `toolbarWords` its own rather than this one.
   // Two shapes of the same words: the toolbar takes its own narrowed set, the bubble bar

@@ -88,6 +88,31 @@ A block type absent from `quireink_pen_safe_blocks()` is not necessarily broken;
 KNOWN to survive, and for a warning those are the same thing. Adding one means opening a post
 that contains it and looking.
 
+## The reading face falls back, because no typeface is shipped
+
+Quire Ink's default reading face is **Literata**, and the writing surface asks for it: the
+stack `tools/extract.ts` emits is the engine's own, Literata first and then Georgia, Times and
+the CJK serifs. The webfont itself is not in this plugin.
+
+That is deliberate and not a shortcut. Literata is four weights in two styles; installing them
+into wp-admin so that one screen can use them is a plugin taking a decision about a site's
+assets that nobody asked it to take. Georgia is on every machine this will ever run on, it is
+a serif, and the difference between it and Literata is smaller than the difference between
+either of them and wp-admin's 13px sans — which is what the surface looked like before the
+reading tokens were cut in at all.
+
+A site that wants the real face has the theme, which does ship it.
+
+## The block editor's own furniture is not on the Quire Ink screen
+
+The surface takes over the classic editing screen, so what is gone with it is everything the
+block editor draws rather than everything WordPress does: the block inserter, block-level
+settings, patterns, reusable blocks, the list view and the code editor.
+
+Everything in the FORM stays — Publish, Schedule, revisions, the lock, autosave, the title,
+taxonomies, the featured image, and every meta box any plugin registered. "Use the block
+editor" is in the Publish box on every screen this takes over, and it is one click.
+
 ## The reading surface is not here and will not be
 
 Type, measure, rail, table of contents, listing: that is the theme's job, it is already

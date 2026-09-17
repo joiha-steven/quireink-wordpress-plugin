@@ -22,6 +22,22 @@ over it with a real pen.
 The strokes come from Quire Ink, a blog engine, where they were drawn from a photographed
 highlighter box: five inks, plus a pencil and a red ballpoint.
 
+= Or write the whole post in Quire Ink =
+
+"Write in Quire Ink" on any post opens WordPress's own editing screen with the blog engine's
+editor in place of the editor box: a serif reading face at a book's measure, a button strip
+that follows you down the page, a formatting bar on the selection, a "/" menu for pictures,
+tables and rules, and Markdown that turns into formatting as you type it. `==like this==`
+becomes a highlight the moment you close it.
+
+Everything around the writing is still WordPress's, because the screen is. Publish, Save draft,
+Schedule, Preview, revisions, the post lock, autosave, the title, categories, tags, the
+excerpt, the featured image and every other plugin's panel are all where they were. "Use the
+block editor" is in the Publish box, one click, any time.
+
+Your post is stored as ordinary HTML, exactly as WordPress stores every post, so your theme,
+your feed, your search and every other plugin read it the way they always have.
+
 = It works with your theme =
 
 Any theme. The plugin adds no layout, no typography and no colours of its own, and every stroke
@@ -62,7 +78,21 @@ No. It works with any theme. The two are made for each other and neither require
 
 = Does it work in the classic editor? =
 
-Not yet. The formats are registered with the block editor's rich text API.
+The three toolbar buttons are block editor only: they are registered with the block editor's
+rich text API and there is no classic equivalent to register them with.
+
+The Quire Ink writing screen is a different thing. It is built on WordPress's classic editing
+screen, and on it you mark a phrase by typing `==like this==` — no button needed.
+
+= What happens to a post I built with blocks? =
+
+Its words come across: headings, bold, italic, links, lists, quotes, code, rules, images and
+tables. Its LAYOUT does not, because Markdown does not hold layout — columns become ordinary
+paragraphs, a button becomes a link, a Custom HTML block becomes its text.
+
+The screen tells you before you touch it, and it names the blocks it found rather than saying
+"some formatting may be lost". Reading and copying from the screen changes nothing; the first
+save asks once more, by name.
 
 = My marks lost their strokes =
 

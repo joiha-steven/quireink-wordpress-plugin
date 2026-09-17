@@ -3,7 +3,8 @@
  * How an author reaches the writing screen.
  *
  * Two doors, both from a post the author is already looking at, and neither from the admin
- * sidebar: this is a way of editing one post, not a section of the site.
+ * sidebar: this is a way of editing one post, not a section of the site. Both lead to the same
+ * `post.php` the Edit link leads to, with `?quireink=1` on the end — see `inc/compose.php`.
  *
  * @package QuireInkPen
  */
@@ -45,7 +46,7 @@ function quireink_pen_row_action( $actions, $post ) {
 
 	$actions['quireink_pen'] = sprintf(
 		'<a href="%s">%s</a>',
-		esc_url( quireink_pen_screen_url( $post->ID ) ),
+		esc_url( quireink_pen_compose_url( $post->ID ) ),
 		esc_html__( 'Write in Quire Ink', 'quire-ink-pen' )
 	);
 
@@ -78,7 +79,7 @@ function quireink_pen_editor_link_assets() {
 	wp_localize_script(
 		'quireink-pen-editor-link',
 		'quireInkPenLink',
-		array( 'url' => quireink_pen_screen_url( $post->ID ) )
+		array( 'url' => quireink_pen_compose_url( $post->ID ) )
 	);
 }
 add_action( 'enqueue_block_editor_assets', 'quireink_pen_editor_link_assets' );

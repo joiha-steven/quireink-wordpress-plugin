@@ -40,6 +40,8 @@ import {
   inkHighlightCss, inkLinesCss, resolveInks, DEFAULT_INKS, inkSignature, penSeed, INKS,
   type PenScope,
 } from '@/pen'
+import { DEFAULT_SETTINGS, typographyToCss, shapeToCss } from '@/content/settings'
+import { themesToCss, fontPresetCss } from '@/content/themes'
 
 const HERE = dirname(import.meta.dir)
 const QUIRE = join(HERE, '..', 'quireink')
@@ -149,20 +151,91 @@ await writeFile(join(META, 'tools/golden/expected.html'), goldenHtml)
 
 // ---------------------------------------------------------------- the furniture's styling
 //
-// The toolbar and the bubble bar wear Tailwind utilities, so their look is not in a file to
-// copy: it is in a 668 KB build of the whole admin. `tools/editor-css.ts` reads the class
-// names out of the two components and keeps only the rules that mention them.
+// The toolbar, the bubble bar and the paper itself wear Tailwind utilities, so their look is
+// not in a file to copy: it is in a 668 KB build of the whole admin. `tools/editor-css.ts`
+// reads the class names out of the components and keeps only the rules that mention them.
+// WHERE THE WRITING SURFACE'S STYLING IS ALLOWED TO REACH. The second WordPress selector in
+// this file after `.editor-styles-wrapper` above, and the one that took two goes to get right.
+//
+// ⚠️ IT IS THE PAPER, AND ONLY THE PAPER. The first cut of this was
+// `:is(#quireink-pen-paper, body.quireink-pen-composing)`, so that the post title outside the
+// paper could take the reading face. `:is()` takes the HIGHEST specificity of its arguments,
+// so every rule became 1-0-0 — including Tailwind's preflight, `*{margin:0;padding:0;border:0}`,
+// which then applied to every element on the page and tied with `#wpcontent{margin-left:160px}`
+// in wp-admin's own sheet. Later sheet wins a tie: the entire admin page slid left, under the
+// menu. Measured, `#wpcontent` margin-left 0 where WordPress asks for 160.
+//
+// An id in the scope is still deliberate, for the other direction: wp-admin styles bare
+// elements and `#poststuff h2{font-size:14px}` in `edit.css` cannot be outranked by any number
+// of classes. Inside the paper that is what is wanted. Outside it, nothing here belongs.
+const SURFACE_SCOPE = '#quireink-pen-paper'
+
+// The TOKENS may go one level out, because they are custom properties and a custom property
+// does nothing until something reads it. The post title is WordPress's own field, printed
+// above the paper, and it is part of the writing rather than part of the form — so it needs
+// `--font-reading` and there is no other way to reach it.
+const TOKEN_SCOPE = ':is(#quireink-pen-paper, body.quireink-pen-composing)'
+
 const editorCss = buildEditorCss(
   join(QUIRE, 'src/admin/dist/admin.css'),
   [
     join(QUIRE, 'src/admin/components/editor-toolbar.ts'),
     join(QUIRE, 'src/admin/components/editor-menus.ts'),
+    // And the writing surface, which is where `prose` comes from. `.prose` is the whole of
+    // how a Quire Ink page READS - the face, the measure, the rhythm between blocks - and it
+    // is unscoped in the engine's build, so it comes across intact. The stroke rules that
+    // share the selector do not: `quireink-pen.css` owns those.
+    join(QUIRE, 'src/admin/components/editor-surface.ts'),
+    // NOT `admin-shared/kit.ts`. The card around the paper was cut from there for a while: it
+    // cost 3,283 B gzip and it is a white box with a hairline border, which inside wp-admin is
+    // what `.postbox` already is. The frame here is WordPress's; what is Quire Ink's is what
+    // is inside it. `admin-shared/scale.ts` went with it - `.reading-font` is written
+    // `.admin .reading-font` in the engine's build and does nothing without an ancestor this
+    // page has no business adding to wp-admin. The title takes `--font-reading` directly.
   ],
   css,
+  SURFACE_SCOPE,
 )
-await writeFile(join(OUT, 'assets/css/quireink-editor.css'), editorCss)
-const edRaw = Buffer.byteLength(editorCss)
-const edGz = gzipSync(editorCss, { level: 9 }).byteLength
+// ---------------------------------------------------------------- what the paper reads AS
+//
+// `.prose` is the whole of how a Quire Ink page reads, and every value in it is a `var()`:
+// `font-size:var(--fs-body)`, `color:var(--c-text)`. Those are declared by the SITE in Quire
+// Ink - the admin shell inlines the blog's own root variables - and a `var()` with no
+// declaration and no fallback is not an error, it is a property that silently inherits. Cut
+// `.prose` into a WordPress admin screen without these and the writing renders in wp-admin's
+// 13px sans while every rule in the sheet says otherwise.
+//
+// So the engine's own emitters are RUN on its own defaults, exactly as the theme's
+// `quireink-tokens.css` is built. Nothing here is a colour or a size anybody typed.
+//
+// The palette PRESETS are cut off at the first `[data-palette=...]`: this plugin has no
+// appearance setting (ADR 0007), so six palettes nothing can select are six palettes of dead
+// bytes. What is kept is the default one, which is what `:root` holds.
+const PALETTES_START = /\[data-palette=/
+const defaults = DEFAULT_SETTINGS
+const themeCss = themesToCss(defaults.themes, defaults.themePreset, undefined, defaults.defaultScheme)
+const paletteAt = themeCss.search(PALETTES_START)
+const readingTokens = [
+  paletteAt === -1 ? themeCss : themeCss.slice(0, themeCss.lastIndexOf('}', paletteAt) + 1),
+  typographyToCss(defaults.typography),
+  shapeToCss(defaults.shape),
+  // The reading FACE. Quire Ink's default is Literata, and the stack it emits falls back
+  // through Georgia and Times before it gives up - so a screen with no webfont still sets a
+  // person's own words in a serif, which is the whole difference between writing and
+  // administering. The webfont itself is not shipped: a plugin that installs a typeface into
+  // wp-admin is a plugin doing something nobody asked for. See docs/gaps.md.
+  fontPresetCss(defaults.fontPreset),
+].join('\n')
+  // Scoped to the paper rather than left on `:root`. These are the SITE's names - `--c-text`,
+  // `--c-bg` - and a plugin that declares them on the root of wp-admin is a plugin reaching
+  // outside the box it was given.
+  .replace(/(^|})\s*:root\s*{/g, `$1\n${TOKEN_SCOPE}{`)
+  .replace(/(^|})\s*\.dark\s*{/g, `$1\n.dark ${TOKEN_SCOPE}{`)
+
+const editorSheet = `/* The reading face, the type scale and the palette, from Quire Ink's own emitters on its\n   own defaults. \`.prose\` below reads every one of them. */\n${readingTokens}\n\n${editorCss}`
+await writeFile(join(OUT, 'assets/css/quireink-editor.css'), editorSheet)
+const edRaw = Buffer.byteLength(editorSheet)
+const edGz = gzipSync(editorSheet, { level: 9 }).byteLength
 
 const commit = (await $`git -C ${QUIRE} rev-parse --short HEAD`.quiet().nothrow()).stdout.toString().trim() || 'unknown'
 const describe = (await $`git -C ${QUIRE} describe --tags --always`.quiet().nothrow()).stdout.toString().trim() || 'unknown'

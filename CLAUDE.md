@@ -16,10 +16,15 @@ this copy of the pen is GPL, the blog engine is not.
 **In Gutenberg**, three inline formats with keyboard shortcuts: `Cmd/Ctrl+Shift+H` highlight,
 `+U` underline, `+O` ring. Works on any theme, alongside every other plugin.
 
-**Or in Quire Ink's own editor**, a second screen reached by "Write in Quire Ink" from a post
-([ADR 0008](./docs/decisions/0008-a-second-writing-screen-not-a-replacement.md)). Typing
-`==x==` becomes a stroke as the closing `=` lands, which is the thing Gutenberg cannot do at
-any price. Gutenberg is not replaced and not discouraged.
+**Or in Quire Ink's own editor**, which takes the place of the editor box **on WordPress's own
+post screen** ([ADR 0008](./docs/decisions/0008-a-second-writing-screen-not-a-replacement.md),
+[ADR 0009](./docs/decisions/0009-the-surface-goes-inside-wordpress-editor.md)). Typing `==x==`
+becomes a stroke as the closing `=` lands, which is the thing Gutenberg cannot do at any price.
+
+Everything around the writing stays WordPress's: Publish, Save draft, Schedule, revisions, the
+post lock, autosave, the title, categories, the featured image, other plugins' meta boxes. The
+plugin fills one field — `<textarea name="content">` — and `post.php` does the rest. "Use the
+block editor" sits in the Publish box on every screen it takes over.
 
 ## It works alone. So does the theme.
 
@@ -80,9 +85,14 @@ is the only way to see the pairing work.
 | The same words got a different stroke | `assets/js/seed.js` — the hash is the engine's, published in its `docs/pen.md` |
 | Nothing is styled although the markup is right | the `pen` class on `<body>`; `inc/enqueue.php` adds it |
 | The toolbar is unstyled, or a bar will not hide | `tools/editor-css.ts` — the subset cut from the engine's Tailwind build |
-| The writing screen is blank, or throws | `quire-ink-pen/assets/js/app.js`, then `inc/screen.php` |
+| The writing screen is blank, or throws | `quire-ink-pen/assets/js/app.js`, then `inc/compose.php` |
+| The block editor opened when Quire Ink was asked for | `inc/compose.php` `quireink_pen_composing` — `?quireink=1`, or a Markdown source already stored |
+| The writing is in wp-admin's sans, not a serif | `assets/css/screen.css` — the inheritance reset; then `tools/extract.ts`, which emits the reading tokens |
+| The whole admin page slid under the menu | `tools/extract.ts` `SURFACE_SCOPE` — an `:is()` carrying an id lends its specificity to Tailwind's `*` preflight |
+| Markdown lost a backslash between saves | `inc/store.php` — `update_post_meta` unslashes what it is given; `check:escape` pins it |
 | Content opened in the wrong shape | `tools/engine-entry.ts` `htmlToNodes` — it returns CHILDREN, never a `doc` |
-| A save was refused | `inc/rest.php` — 409 means the post was edited elsewhere; `inc/store.php` explains |
+| A save kept the old text | `assets/js/app.js` `sync()` — `#content` is what WordPress saves, and it is filled from the document, not typed into |
+| The post reopened with someone else's edit | `inc/store.php` — the hash says `foreign`, so the screen opens from `post_content`, which is the newer text |
 | The editor refuses content with no error | `bun run check:deps` — two copies of ProseMirror |
 | The local WordPress | `dev/docker-compose.yml`, `dev/up.sh` |
 
@@ -116,11 +126,11 @@ is the only way to see the pairing work.
 
 - **`assets/css/quireink-pen.css`, `assets/css/quireink-editor.css` and
   `assets/js/quireink-engine.js` are GENERATED.** Editing
-  either is pointless: the next extract overwrites it and `check:generated` is red until it
+  any of them is pointless: the next extract overwrites it and `check:generated` is red until it
   does. The engine bundle is `bun build` over the sibling checkout, 79 modules including
   ProseMirror, and it is never read by a human: `check:generated` reports the engine VERSION,
   the exported API and the golden render instead of a byte diff.
-- **The compressed size is the whole reason this is possible.** 534,237 B raw, **34,533 B
+- **The compressed size is the whole reason this is possible.** 604,910 B raw, **34,906 B
   gzip**, budget 44,000. `check:filesize` gzips the sheet on every run, because a raw byte
   comparison would have passed on the day a change made the sheet stop compressing.
 - **`dev/` throws its database away.** `dev/down.sh` is `docker compose down -v`.

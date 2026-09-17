@@ -24,8 +24,18 @@ const markdown = [...new Set(ROOTS.flatMap((r) => (r === '.' ? readdirSync('.').
 const broken: string[] = []
 const linked = new Set<string>()
 
+/**
+ * The prose, with the code taken out.
+ *
+ * A link inside backticks is an EXAMPLE of a link, not one: `docs/gaps.md` documents Markdown
+ * image syntax as `![alt](url)` and this check went looking for a file called `url`. Fenced
+ * blocks go too, for the same reason and more of it.
+ */
+const prose = (text: string): string =>
+  text.replace(/^```[\s\S]*?^```/gm, '').replace(/`[^`\n]*`/g, '')
+
 for (const file of markdown) {
-  const text = readFileSync(file, 'utf8')
+  const text = prose(readFileSync(file, 'utf8'))
   for (const m of text.matchAll(/\]\((?!https?:|#|mailto:)([^)#]+)(?:#[^)]*)?\)/g)) {
     const target = normalize(join(dirname(file), m[1]!)).replaceAll('\\', '/')
     linked.add(target)

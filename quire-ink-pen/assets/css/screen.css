@@ -1,126 +1,207 @@
-/*
- * The writing screen's furniture. NOT the prose: the ink sheet draws the marks and the
- * engine's editor brings its own node styling, so what is here is the bar, the notice and the
- * column the writing sits in.
- *
- * Hand-written, which means invariant 1 applies: no custom property is read that this plugin
- * does not define, except through a fallback, and no selector names the theme. This screen is
- * wp-admin, so there is no theme in the room at all - but the guard does not know that and
- * should not have to.
- */
+/* The writing surface's LAYOUT inside wp-admin. Hand-written, and the only stylesheet in this
+   plugin that is.
 
-.quireink-pen-screen {
-	margin: 0;
-	background: #fcfcfc;
-	color: #30302f;
-	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+   The division is the point. `quireink-editor.css` is generated from the blog engine and
+   carries how the writing LOOKS — the reading face, the type scale, the page colours, the
+   button strip. This file carries where it SITS, and where it sits is a WordPress question:
+   the engine's answer is a card in a two-pane admin that does not exist here.
+
+   ⚠️ NO COLOURS FROM THE ENGINE ARE TYPED HERE. Every value below is either a WordPress
+   admin value, a length, or a `var()` on a token the generated sheet declares — with a
+   fallback, because `check:standalone` refuses the rest. */
+
+/* ── giving the writing back its own type ────────────────────────────────────────────── */
+
+/* ⚠️ WITHOUT THIS BLOCK THE WRITING IS 13px AND THE PEN IS 28% TOO SMALL, and every rule in
+   the generated sheet says otherwise.
+
+   wp-admin styles bare ELEMENTS: `p{font-size:13px;line-height:1.5;margin:1em 0}` in
+   `common.css`, `dd,li{margin-bottom:6px}`, `h1{...}`, `h5{...}`, `ol{margin-left:2em}`.
+   `.prose` sets its size on the surface and lets the paragraphs inherit it — and inheritance
+   loses to any declaration at all, whatever the specificity on the other side. So the
+   paragraphs took 13px, the marks inside them took 13px, and because a stroke is sized in `em`
+   the ink itself came out 28% small. Measured against the same markup with the same two
+   sheets and no wp-admin: 13px/19.5 against 18px/29.7, on 25 of 25 elements.
+
+   `inherit`, not values. Nothing here decides what the writing looks like; it only stops
+   somebody else deciding.
+
+   ⚠️ THE SPECIFICITY IS DELIBERATE AND IT IS 1-0-1. Above wp-admin's bare elements (0-0-1).
+   BELOW every rule in the generated sheet, which is scoped `:is(#quireink-pen-paper, …)
+   .prose …` and so is at least 1-1-0 — so the engine still says what a heading, a quote or a
+   list item looks like, and this only fills the silence. Adding `.prose` here would raise it
+   to 1-1-1, win against the engine, and flatten every margin in the document. */
+#quireink-pen-paper :is(p, li, dd, dt, ul, ol, h1, h2, h3, h4, h5, h6,
+                        blockquote, table, td, th, a, figure, figcaption, hr) {
+  font-size: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  font-family: inherit;
+  color: inherit;
+  margin: 0;
 }
 
-.qi-bar {
-	position: sticky;
-	top: 0;
-	z-index: 10;
-	display: flex;
-	align-items: center;
-	gap: 1rem;
-	padding: 0.7rem 1.2rem;
-	background: #fff;
-	box-shadow: 0 0 0 1px #e3e2e2;
+/* `#poststuff h2{padding:8px 12px}` in `edit.css` is meant for a meta box's title bar, and it
+   indented every heading in the writing by 12px. Headings only: the engine gives padding to
+   quotes and table cells and this must not take it back. The specificity ties with that rule
+   at 1-0-1 and `screen.css` is enqueued after `edit.css`, so the tie falls this way. */
+#quireink-pen-paper :is(h1, h2, h3, h4, h5, h6) {
+  padding: 0;
 }
 
-.qi-title {
-	flex: 1 1 auto;
-	min-width: 0;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-	font-weight: 600;
+/* Code keeps its own face: wp-admin sets `code{font-family:Consolas,Monaco,monospace}` and the
+   engine sets its own on `.prose code`, which wins on specificity. Resetting the family here
+   would hand it to whichever of the two came last. */
+#quireink-pen-paper :is(pre, code, kbd, samp) {
+  font-size: inherit;
+  line-height: inherit;
+  margin: 0;
 }
 
-.qi-status {
-	font-size: 0.85rem;
-	color: #6d6c6c;
-	min-width: 6rem;
-	text-align: right;
+/* ── the paper ────────────────────────────────────────────────────────────────────────── */
+
+/* ⚠️ THE MEASURE IS ON THE WRITING, NOT ON THE COLUMN, and the two are different widths on
+   purpose. 672px of text is 18px on a ~66-character line, which is what the reading tokens
+   were sized against; wider is not more room, it is a line the eye loses its place on. The
+   BUTTON STRIP is not text and wants the whole card: squeezed to the measure it wrapped onto
+   two rows and the writing surface looked like a form. The blog engine's own sheet is built
+   the same way — a full-width card with a narrow column inside it. */
+.quireink-pen-composing :is( #titlediv, .quireink-pen-sheet, .quireink-pen-warning,
+                             .quireink-pen-hint, .quireink-pen-fallback ) {
+  max-width: 44rem;
+  margin-left: auto;
+  margin-right: auto;
+  /* The notice has a 4px bar and 12px of padding, and without this it sat 14px proud of the
+     writing on each side. Everything in this column lines up on the same two edges or the
+     column is not a column. */
+  box-sizing: border-box;
 }
 
-.qi-status-ok { color: #2b6b3f; }
-.qi-status-warn { color: #8a4b00; }
-
-.qi-bar a {
-	color: #1a1919;
-	font-size: 0.9rem;
-	text-decoration: underline;
-	text-underline-offset: 2px;
+.quireink-pen-compose {
+  margin: 0 0 1rem;
 }
 
-.qi-save {
-	font: inherit;
-	font-size: 0.9rem;
-	padding: 0.4rem 1.1rem;
-	color: #fff;
-	background: #1a1919;
-	border: 1px solid #1a1919;
-	border-radius: 3px;
-	cursor: pointer;
+/* The frame is WordPress's, because on this screen WordPress is the page: a white card with
+   the same hairline `.postbox` wears (`#c3c4c7`, `wp-admin/css/common.css`). The blog engine's
+   own card is a different product's chrome and would read as a box inside a box. */
+.quireink-pen-paper {
+  background: #fff;
+  border: 1px solid #c3c4c7;
+  border-radius: 4px;
 }
 
-.qi-save[disabled] { opacity: 0.55; cursor: default; }
-
-.qi-page {
-	max-width: 42rem;
-	margin: 0 auto;
-	padding: 2.5rem 1.2rem 6rem;
+/* The writing itself. `.prose` from the generated sheet does the typography; this gives it the
+   page it is set on, and takes away the focus ring a div with `contenteditable` collects. */
+.quireink-pen-sheet .ProseMirror,
+.quireink-pen-sheet .ProseMirror:focus-visible {
+  outline: none;
 }
 
-.qi-notice {
-	margin: 0 0 1.6rem;
-	padding: 0.8rem 1rem;
-	font-size: 0.9rem;
-	line-height: 1.5;
-	background: #f4f4f3;
-	box-shadow: 0 0 0 1px #e3e2e2;
+/* Room under the last line, so a writer can put the end of a post in the middle of the screen
+   rather than at the bottom edge of it. */
+.quireink-pen-sheet {
+  padding-bottom: 4rem;
 }
 
-/* A control's edge has to be identifiable, so this one is not a hairline (WCAG 2.1 SC 1.4.11). */
-.qi-notice-warn {
-	background: #fdf6ec;
-	box-shadow: 0 0 0 1px #c98a2e;
+/* ── the title ────────────────────────────────────────────────────────────────────────── */
+
+/* WordPress's own field, in the writing's face rather than the form's. It is the headline of
+   the piece, not a row in a settings screen, and it is above the paper in the markup already
+   — so it only needs to stop looking like a text input. */
+.quireink-pen-composing #titlediv #title {
+  font-family: var(--font-reading, Georgia, 'Times New Roman', serif);
+  font-size: 2rem;
+  font-weight: var(--fw-title, 700);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--c-heading, #1a1919);
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  padding: 0.75rem 0 0.25rem;
 }
 
-/* The writing itself. The engine's editor mounts a contenteditable in here. */
-.qi-host > .ProseMirror {
-	outline: none;
-	min-height: 60vh;
-	font-size: 1.05rem;
-	line-height: 1.7;
+.quireink-pen-composing #titlediv #title::placeholder {
+  font-style: italic;
+  font-weight: 400;
+  opacity: 0.45;
 }
 
-.qi-host > .ProseMirror > * { margin: 0 0 1.1rem; }
-.qi-host > .ProseMirror h1 { font-size: 1.9rem; line-height: 1.2; margin: 2rem 0 1rem; }
-.qi-host > .ProseMirror h2 { font-size: 1.45rem; line-height: 1.25; margin: 1.8rem 0 0.8rem; }
-.qi-host > .ProseMirror h3 { font-size: 1.15rem; margin: 1.5rem 0 0.6rem; }
-.qi-host > .ProseMirror pre {
-	padding: 0.9rem 1rem;
-	overflow-x: auto;
-	background: #f4f4f3;
-	font-size: 0.9rem;
-}
-.qi-host > .ProseMirror blockquote {
-	margin-inline: 0;
-	padding-left: 1rem;
-	border-left: 2px solid #c9c8c8;
-	color: #4a4a49;
+.quireink-pen-composing #titlediv #title:focus {
+  box-shadow: none;
+  outline: none;
 }
 
-.qi-notice strong { display: block; margin-bottom: 0.4rem; }
-.qi-notice p { margin: 0 0 0.5rem; }
-.qi-notice p:last-child { margin-bottom: 0; }
+/* ── the button strip ─────────────────────────────────────────────────────────────────── */
 
-/* A picture in the editor is a picture at its own pixel size otherwise, and a 512px icon then
-   fills the writing column. The engine constrains this in its own admin sheet, which is not
-   part of the toolbar subset brought across. */
-.qi-host > .ProseMirror img {
-	max-width: 100%;
-	height: auto;
+/* ⚠️ `display: contents`, AND IT IS THE WHOLE OF WHETHER THE STRIP STAYS PUT.
+
+   The strip is `position: sticky` and a sticky element travels inside its own CONTAINING
+   BLOCK. A wrapper exactly as tall as the strip gives it nowhere to travel, so it leaves with
+   the first pixel of scroll and the formatting keys are gone for the rest of a long post.
+   Removing this box makes `#quireink-pen-paper` the containing block, which is the height of
+   the writing — which is what a writer means by a toolbar. The blog engine's own sheet does
+   the same thing for the same reason, and says so.
+
+   Nothing else belongs here: the strip carries its own `sticky z-10` from the engine's build,
+   and its top offset is measured against the admin bar in `app.js`. */
+.quireink-pen-tools {
+  display: contents;
+}
+
+/* Sticky needs an ancestor that is not a scroll container. `#poststuff` and
+   `#post-body-content` have no `overflow` in WordPress 6.8; if one ever gains it, the strip
+   will scroll away and nothing will say so. */
+.quireink-pen-paper,
+.quireink-pen-compose {
+  overflow: visible;
+}
+
+/* ── what the page says before the writing starts ─────────────────────────────────────── */
+
+.quireink-pen-warning {
+  margin: 0 0 1rem;
+}
+
+.quireink-pen-warning-loud {
+  border-left-color: #d63638;
+}
+
+.quireink-pen-hint {
+  margin: 0.75rem 0 0;
+  color: var(--c-meta, #6a6a70);
+  font-size: 13px;
+}
+
+.quireink-pen-switch .dashicons {
+  color: #8c8f94;
+}
+
+/* ── pictures ─────────────────────────────────────────────────────────────────────────── */
+
+/* A 512px icon renders at 512px and fills the writing column. The engine's own reader
+   constrains figures to the measure; inside a WordPress admin screen nothing does. */
+.quireink-pen-sheet .ProseMirror img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ── the fallback ─────────────────────────────────────────────────────────────────────── */
+
+/* `#content` is a real textarea holding the post's real HTML, and it is what a browser with
+   no JavaScript gets to edit. Core's `.hide-if-js` takes it away the moment `<body>` gets
+   its `js` class, so this only has to make it usable in the case where it stays. */
+.quireink-pen-fallback {
+  width: 100%;
+  font-family: Consolas, Monaco, monospace;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* ── narrow screens ───────────────────────────────────────────────────────────────────── */
+
+@media screen and (max-width: 782px) {
+  .quireink-pen-composing #titlediv #title {
+    font-size: 1.5rem;
+  }
 }

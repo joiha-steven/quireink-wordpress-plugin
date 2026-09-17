@@ -1,6 +1,8 @@
 # 0008 — A second writing screen, not a replacement
 
-**In force.**
+**In force**, amended by [0009](0009-the-surface-goes-inside-wordpress-editor.md): the screen
+is no longer a page of its own and `use_block_editor_for_post` is no longer untouched. The
+decision below — a second way to write, chosen per post, never the only one — stands.
 
 ## Context
 
