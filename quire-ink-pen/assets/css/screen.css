@@ -58,6 +58,33 @@
   margin: 0;
 }
 
+/* ── the furniture's own reset ────────────────────────────────────────────────────────── */
+
+/* Tailwind's preflight, written out by hand for the three things that need it and for nothing
+   else: the button strip, the bubble bar and the "/" menu. All three are built from utility
+   classes that assume `margin: 0; padding: 0; border: 0` underneath them, and a `button` left
+   with the browser's own `1px 6px` is a key 12px wider than the strip was measured for.
+
+   ⚠️ IT MUST NOT REACH THE WRITING. The generated sheet used to carry Tailwind's own
+   `*{margin:0;padding:0;border:0}`, and scoped under the paper's id that is a 1-0-0 rule
+   against the pen's `mark[data-pen="N"]{padding:0 .3em 0 .15em}` at 0-2-1. It won, and it
+   flattened the overhang that makes a stroke run past the word it covers — measured against
+   the published page, which carries only the pen sheet: padding 0 against 2.7px, margin 0
+   against -1.98px, on every mark and every underline. Nothing failed. The strokes were simply
+   the wrong shape.
+
+   `.quireink-pen-furniture` is put on the bubble bar and the "/" menu by `app.js`; the engine
+   builds them and has no idea this screen exists. */
+#quireink-pen-paper :is( .quireink-pen-tools, .quireink-pen-furniture ),
+#quireink-pen-paper :is( .quireink-pen-tools, .quireink-pen-furniture ) *,
+#quireink-pen-paper :is( .quireink-pen-tools, .quireink-pen-furniture ) ::before,
+#quireink-pen-paper :is( .quireink-pen-tools, .quireink-pen-furniture ) ::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  border: 0 solid;
+}
+
 /* ── the paper ────────────────────────────────────────────────────────────────────────── */
 
 /* ⚠️ THE MEASURE IS ON THE WRITING, NOT ON THE COLUMN, and the two are different widths on
@@ -105,6 +132,21 @@
 
 /* ── the title ────────────────────────────────────────────────────────────────────────── */
 
+/* WordPress draws the "Add title" prompt as a LABEL laid over the field, not as a placeholder,
+   and it keeps its own size and padding: measured 22.1px of the admin sans with 10px of
+   padding, over a 32px Literata field with none. On an empty post that is what a writer sees
+   first, and it read as a small indented line of the wrong typeface floating above the paper.
+   It has to be the same words in the same place the typing will appear. */
+.quireink-pen-composing #title-prompt-text {
+  font-family: var(--font-reading, Georgia, 'Times New Roman', serif);
+  font-size: 2rem;
+  font-weight: 400;
+  font-style: italic;
+  line-height: 1.2;
+  padding: 0.75rem 0 0.25rem;
+  opacity: 0.35;
+}
+
 /* WordPress's own field, in the writing's face rather than the form's. It is the headline of
    the piece, not a row in a settings screen, and it is above the paper in the markup already
    — so it only needs to stop looking like a text input. */
@@ -134,6 +176,27 @@
 
 /* ── the button strip ─────────────────────────────────────────────────────────────────── */
 
+/* ⚠️ THE KEYS ARE NARROWER HERE THAN IN QUIRE INK, and it is a measurement rather than a
+   taste. The engine builds the strip as five groups: 226 + 226 + 112 + 112 + 226 = 902px, with
+   12px between them, so it wants ~950px. WordPress reserves 300px of this screen for the
+   Publish box and its meta boxes, which leaves the card 938px and the strip 904px inside its
+   own padding. Six per cent short, so one group wrapped and the strip stood two rows tall —
+   96px of chrome above the writing, at every window size a laptop has.
+
+   Only the WIDTH moves: `min-w-9` (36px) becomes 32px, which takes 96px out of 24 keys and
+   leaves ~50px of room. The height stays 36px, so the strip is the same depth Quire Ink's is
+   and a key is still a comfortable target. wp-admin's own buttons are 30px.
+
+   A key with a wide label — a long word in another locale — still grows past 32px, because
+   this is a minimum and not a size.
+
+   The selector carries the paper's id because the rule it is arguing with does: the generated
+   sheet is scoped `#quireink-pen-paper`, so `.min-w-9` there is 1-1-0 and a plain
+   `.quireink-pen-tools button` at 0-1-1 loses without a word. */
+#quireink-pen-paper .quireink-pen-tools button {
+  min-width: 2rem;
+}
+
 /* ⚠️ `display: contents`, AND IT IS THE WHOLE OF WHETHER THE STRIP STAYS PUT.
 
    The strip is `position: sticky` and a sticky element travels inside its own CONTAINING
@@ -159,8 +222,26 @@
 
 /* ── what the page says before the writing starts ─────────────────────────────────────── */
 
+/* A `<details>`, so the notice can be folded away. It is worth reading once and then it is in
+   the way of the writing for the rest of the session; a warning you cannot put down is a
+   warning people learn to look past. Open by default only when something is at risk. */
 .quireink-pen-warning {
   margin: 0 0 1rem;
+  padding: 10px 12px;
+}
+
+.quireink-pen-warning summary {
+  cursor: pointer;
+  font-weight: 600;
+  list-style-position: outside;
+}
+
+.quireink-pen-warning summary::marker {
+  color: #8c8f94;
+}
+
+.quireink-pen-warning p {
+  margin: 0.6em 0 0;
 }
 
 .quireink-pen-warning-loud {

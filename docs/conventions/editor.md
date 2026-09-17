@@ -120,12 +120,22 @@ what breaks if one of them moves.
 
 ```js
 let h = 0x811c9dc5
-for ( let i = 0; i < text.length; i++ ) h = Math.imul( h ^ text.charCodeAt( i ), 0x01000193 )
-return ( text.length <= 28 ? 40 : 0 ) + ( h >>> 0 ) % 40
+for ( let i = 0; i < raw.length; i++ ) h = Math.imul( h ^ raw.charCodeAt( i ), 0x01000193 )
+const inner = raw.replace( /^(==|\+\+|@@)/, '' ).replace( /(==|\+\+|@@)(#[a-z]+)?$/, '' )
+return ( inner.length <= 28 ? 40 : 0 ) + ( h >>> 0 ) % 40
 ```
 
+⚠️ **`raw` IS THE GESTURE'S SOURCE, NOT THE WORDS** — `==a phrase==`, `++a line++`,
+`@@a word@@#green`, fences and colour included. The engine calls it with `node.raw` in
+`md/html.ts`. `formats.js` passed the selected text for a release, so the block editor's button
+and the Quire Ink editor dealt different strokes to the same phrase: 71 against 43 on
+"highlighted phrase". The fixtures could not see it, because a bare string has no fence to
+strip and both readings then agree; `SEED_PROBE` is real gestures now, including one sitting on
+the 28-character boundary, and `check:contract` reads the call site as well as the function.
+
 Variants 0-39 are long strokes for a phrase, 40-79 the short hand for a word or two, which is
-what the length test picks between.
+what the length test picks between — measured on what is INSIDE the fences, while the hash is
+taken of the whole thing.
 
 **Do not write this a second time.** `check:contract` counts implementations by looking for the
 FNV prime and requires exactly one. When something server-side needs a seed, the answer is to

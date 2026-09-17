@@ -98,6 +98,56 @@ if (marks) {
   for (const a of extra) bad.push(`marks.php: quireink_pen_attributes() invents ${a}`)
 }
 
+// ── AND THE BLOCK EDITOR HASHES THE GESTURE, NOT THE WORDS ───────────────────────────────
+//
+// The fixtures above compare the seed FUNCTION. They cannot see the argument, and the argument
+// is where this went wrong: `formats.js` hashed the selected text while the engine hashes
+// `node.raw`, the gesture's whole Markdown source. Same function, same fixtures, agreement on
+// every one of them — and a different stroke for every real mark. Measured: "highlighted
+// phrase" drew variant 71 from the block editor's button and 43 from the Quire Ink editor.
+//
+// So the call site is pinned. It is one line, it is load-bearing, and a check that reads it is
+// cheaper than the release that does not.
+{
+  const formats = files.find((f) => f.endsWith('assets/js/formats.js'))
+  if (formats) {
+    const src = readFileSync(formats, 'utf8')
+    if (!/seed\(\s*fence \+ getTextContent/.test(src)) {
+      bad.push('formats.js: the seed must be taken of `fence + text + fence`, not of the text')
+    }
+    for (const fence of ['==', '@@', '++']) {
+      if (!src.includes(`'${fence}'`)) bad.push(`formats.js: no \`${fence}\` fence, so one gesture hashes as another`)
+    }
+  }
+}
+
+// ── ONE SHEET DRAWS THE PEN ──────────────────────────────────────────────────────────────
+//
+// `quireink-pen.css` is generated from the blog engine's own ink emitter and is the only sheet
+// on a published page, so it is complete on its own. `quireink-editor.css` is a cut of the
+// admin build for the writing surface's furniture, and the admin build carries the pen too.
+//
+// Two sheets drawing one element is a fight decided by specificity, and this one was LOST the
+// day the cut was scoped under an id: `#quireink-pen-paper .prose mark` at 1-1-1 beat
+// `mark[data-ink=green][data-pen="71"]` at 0-3-1, so every ink drew the default yellow.
+// Measured on all five. Nothing failed; the marks were simply the wrong colour.
+{
+  const editor = 'quire-ink-pen/assets/css/quireink-editor.css'
+  const pen = 'quire-ink-pen/assets/css/quireink-pen.css'
+  // Selectors only: `@property --u-translate-x` is Tailwind's own renamed internal, not a rule.
+  const selectors = readFileSync(editor, 'utf8')
+    .split('}').map((b) => b.slice(b.lastIndexOf('{') === -1 ? 0 : 0, b.indexOf('{')))
+    .filter((sel) => sel && !sel.trimStart().startsWith('@'))
+  const offenders = selectors.filter((sel) => /\[data-(pen|ink|form)|(^|[\s>+~,(])(mark|u)(?=[\s>+~,.:[{]|$)/.test(sel))
+  for (const sel of offenders.slice(0, 5)) {
+    bad.push(`quireink-editor.css draws the pen: ${sel.trim().slice(0, 70)}`)
+  }
+  const inks = [...readFileSync(pen, 'utf8').matchAll(/mark\[data-ink=(\w+)\]/g)].map((m) => m[1]!)
+  const named = [...new Set(inks)]
+  if (named.length < 4) bad.push(`quireink-pen.css names only ${named.length} ink(s); expected the four besides the default`)
+  console.log(`  ink: ${named.length} coloured ink(s) in the pen sheet, ${offenders.length} pen selector(s) in the editor sheet`)
+}
+
 if (bad.length === 0) console.log('✓ check:contract: ok')
 else {
   console.log(`✗ check:contract: ${bad.length} violation(s)`)

@@ -243,7 +243,24 @@ const describe = (await $`git -C ${QUIRE} describe --tags --always`.quiet().noth
 // The seed hash lives in JS in the plugin and in TypeScript in the engine. `check:contract`
 // compares them; the manifest records the engine's answers so the comparison has a fixture
 // even when no checkout is present.
-const SEED_PROBE = ['a', 'highlight', 'a whole phrase that runs past twenty-eight characters', 'Việt', '']
+// ⚠️ REAL GESTURES, NOT BARE WORDS. The probe was five plain strings, and on a plain string
+// `penSeed` strips no fence — so the plugin's copy, which hashed the bare text, agreed with
+// the engine on every fixture while disagreeing on every real mark. The function was identical
+// and the ARGUMENT was not, which is a drift no comparison of the function can see.
+const SEED_PROBE = [
+  '==highlighted phrase==',
+  '++a line under words++',
+  '@@ringed@@',
+  '==a whole phrase that runs past twenty-eight characters==',
+  '==go tay==#green',
+  // ⚠️ ON THE BOUNDARY, and it is the fixture the first set was missing. 28 characters inside
+  // the fences and 32 with them, so the short half of the deck is chosen by the INNER length
+  // and a copy that measures the raw string picks the long half instead. Every other fixture
+  // here is far enough from 28 that both readings agree, which is how a wrong one passed.
+  '==twenty seven characters okay==',
+  '==Việt==',
+  'a', '',
+]
 const seeds = Object.fromEntries(SEED_PROBE.map((s) => [s, penSeed(s)]))
 
 await writeFile(

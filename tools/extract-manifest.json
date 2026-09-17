@@ -43,14 +43,18 @@
   },
   "editor_css": {
     "path": "quire-ink-pen/assets/css/quireink-editor.css",
-    "bytes": 62984,
-    "gzip": 11928
+    "bytes": 53006,
+    "gzip": 10111
   },
   "seed_probe": {
+    "==highlighted phrase==": 43,
+    "++a line under words++": 53,
+    "@@ringed@@": 66,
+    "==a whole phrase that runs past twenty-eight characters==": 38,
+    "==go tay==#green": 45,
+    "==twenty seven characters okay==": 69,
+    "==Việt==": 47,
     "a": 60,
-    "highlight": 47,
-    "a whole phrase that runs past twenty-eight characters": 34,
-    "Việt": 75,
     "": 61
   }
 }

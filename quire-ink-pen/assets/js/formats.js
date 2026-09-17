@@ -44,9 +44,17 @@
 	var MARK = 'quire-ink-pen/mark';
 	var UNDERLINE = 'quire-ink-pen/underline';
 
-	/** The stroke for the words currently selected. */
-	function seedFor( value ) {
-		return String( window.quireInkPen.seed( getTextContent( slice( value ) ) ) );
+	/**
+	 * The fence each gesture is written with in Markdown. The seed is a hash of the gesture's
+	 * SOURCE, not of the words, so a mark made with a button here has to be hashed as though it
+	 * had been typed: `==a phrase==`, `++a line++`, `@@a word@@`. Hashing the bare text dealt a
+	 * different stroke from the one the Quire Ink editor deals to the same phrase.
+	 */
+	var FENCE = { mark: '==', ring: '@@', underline: '++' };
+
+	/** The stroke for the words currently selected, in the gesture about to be applied. */
+	function seedFor( value, fence ) {
+		return String( window.quireInkPen.seed( fence + getTextContent( slice( value ) ) + fence ) );
 	}
 
 	function isActive( value, name, form ) {
@@ -69,7 +77,8 @@
 		if ( isCollapsed( value ) ) {
 			return;
 		}
-		var attributes = { 'data-pen': seedFor( value ) };
+		var fence = form ? FENCE.ring : ( UNDERLINE === name ? FENCE.underline : FENCE.mark );
+		var attributes = { 'data-pen': seedFor( value, fence ) };
 		if ( form ) {
 			attributes[ 'data-form' ] = form;
 		}

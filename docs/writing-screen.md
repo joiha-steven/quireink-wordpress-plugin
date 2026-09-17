@@ -84,6 +84,24 @@ heading or a quote looks like.
 
 After both: **0 of 25**.
 
+## Two more the same shape, found by looking at it
+
+The id in the scope is a loaded gun pointed at anything the pen sheet says, because
+`quireink-pen.css` speaks in attributes and attributes lose to an id however many of them there
+are. Both of these were invisible: nothing failed, the strokes were simply wrong.
+
+| | what won | what it did |
+|---|---|---|
+| `.prose mark{--ink-stroke:…}` in the cut, 1-1-1 | over `mark[data-ink=green][data-pen="71"]`, 0-3-1 | **every ink drew the default yellow.** Green, pink, blue and orange all `#d5f856` |
+| Tailwind's `*{margin:0;padding:0}`, 1-0-0 | over `mark[data-pen="71"]{padding:0 .3em 0 .15em}`, 0-2-1 | the overhang that makes a stroke run past its word — padding 0 against 2.7px, margin 0 against −1.98px |
+
+So the cut carries no `mark`, no `u`, no `[data-pen]` and no universal reset at all. The pen
+sheet is the only sheet on a published page, so it is complete on its own; the furniture's
+preflight is written out by hand in `screen.css` for the three elements that need it.
+`check:contract` refuses a pen selector in the editor sheet.
+
+Measured against the published page, which carries only the pen sheet, both are now equal.
+
 ## What the field holds
 
 `#content` is filled from the document, not typed into, so it has to be refreshed. When:

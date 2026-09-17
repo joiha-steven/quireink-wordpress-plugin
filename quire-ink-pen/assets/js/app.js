@@ -141,14 +141,20 @@
 			onPickImage: function () { openSlash( null ); onPickImage(); },
 			onPickGallery: function () { openSlash( null ); onPickGallery(); },
 		} );
-		// ⚠️ MOVED INTO THE PAPER. The engine appends the menu to `document.body`, which is
-		// right on its own screen and wrong on this one: the writing surface's stylesheet is
-		// scoped to the paper, so a menu left on the body renders as unstyled buttons in a
-		// column. It is `position: fixed` and no ancestor here has a transform or a filter, so
-		// re-parenting moves nothing on screen. Taken as the body's last child because the
-		// append is synchronous and just happened.
+		// ⚠️ MOVED INTO THE PAPER, AND MARKED AS FURNITURE. The engine appends the menu to
+		// `document.body`, which is right on its own screen and wrong on this one: the writing
+		// surface's stylesheet is scoped to the paper, so a menu left on the body renders as
+		// unstyled buttons in a column. It is `position: fixed` and no ancestor here has a
+		// transform or a filter, so re-parenting moves nothing on screen. Taken as the body's
+		// last child because the append is synchronous and just happened.
+		//
+		// The class is what `screen.css` resets padding and margin on. That reset used to be
+		// Tailwind's own `*`, which reached the writing and flattened the pen's overhang.
 		var menu = document.body.lastElementChild;
-		if ( menu && menu.getAttribute( 'role' ) === 'menu' ) { paper.appendChild( menu ); }
+		if ( menu && menu.getAttribute( 'role' ) === 'menu' ) {
+			menu.classList.add( 'quireink-pen-furniture' );
+			paper.appendChild( menu );
+		}
 	}
 
 	function onPickImage() {
@@ -192,6 +198,15 @@
 		onPickGallery: onPickGallery,
 	} );
 	var bubble = engine.mountBubbleBar( editor, engine.sheetWords, askLink );
+
+	// The bubble bar is built and placed by the engine, which appends it beside the writing
+	// surface so its `z-40` is compared against the toolbar's `z-10` rather than against the
+	// whole page. It stays there; it only gains the class the furniture reset looks for, and
+	// it gains it on the next frame because the plugin that appends it runs after this call.
+	window.requestAnimationFrame( function () {
+		var bar = sheet.querySelector( '.z-40' );
+		if ( bar ) { bar.classList.add( 'quireink-pen-furniture' ); }
+	} );
 
 	// Both bars are told how much fixed furniture is above them, MEASURED rather than assumed:
 	// the admin bar is 32px on a desktop and 46px on a phone, and a plugin that writes either

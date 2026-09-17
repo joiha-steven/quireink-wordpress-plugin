@@ -62,6 +62,22 @@ const unescape = (s: string) => s.replace(/\\/g, '')
 const RESET = /^:root|^html|^\*|\[hidden\]/
 
 /**
+ * Tailwind's UNIVERSAL preflight, which is dropped here and hand-written for the furniture in
+ * `assets/css/screen.css` instead.
+ *
+ * ⚠️ IT WAS FLATTENING THE PEN. `*{margin:0;padding:0;border:0 solid}` scoped under the
+ * paper's id is a 1-0-0 rule, and the pen's own overhang is `mark[data-pen="71"]{padding:0
+ * .3em 0 .15em;margin:0 -.26em 0 -.11em}` at 0-2-1 — the numbers that let a stroke run past
+ * the word it covers, which is the whole difference between a hand stroke and a rectangle.
+ * Measured against the published page, which carries only the pen sheet: padding 0 against
+ * 2.7px, margin 0 against -1.98px, on every mark and every underline.
+ *
+ * The preflight is for the TOOLBAR, and the toolbar is a handful of elements with a class on
+ * them. It does not need a rule that reaches every word an author writes.
+ */
+const UNIVERSAL = /^\s*\*/
+
+/**
  * Selectors the PEN sheet already draws, which this one must not draw a second time.
  *
  * Cutting `.prose` for the reading typography brings the stroke rules with it, because the
@@ -69,8 +85,22 @@ const RESET = /^:root|^html|^\*|\[hidden\]/
  * inside SVG data URIs. `quireink-pen.css` is generated from the engine's own emitter and is
  * the one place those belong; a second copy here would be ~500 KB of the same ink, out of step
  * with the first the moment an ink changes.
+ *
+ * ⚠️ AND THE BASE `mark` AND `u` RULES, WHICH IS THE PART THAT SHIPPED BROKEN. The pen sheet
+ * carries a default stroke on plain `mark` and overrides it per ink —
+ * `mark[data-ink=green]{--ink-stroke:…}` — and the admin build carries the same pair. While
+ * this cut was unscoped its `.prose mark` lost the argument at 0-1-1 against the pen sheet's
+ * 0-2-1 and nothing showed. Scoping it under an id made it 1-1-1, which beats an attribute
+ * selector however many attributes it carries, so the default yellow stroke won for every ink:
+ * green, pink, blue and orange all drew `#d5f856`. Measured on all five.
+ *
+ * The pen sheet is self-sufficient by construction — it is the only sheet on a published page
+ * — so the whole of the pen comes out of here and none of it is missed.
  */
-const PEN_OWNED = /\[data-pen|\[data-ink|\[data-form/
+const PEN_OWNED = /\[data-pen|\[data-ink|\[data-form|pen-fresh/
+
+/** `mark` and `u` as ELEMENTS, which is where the pen lives. Not `.u-…`, not `ul`. */
+const PEN_ELEMENT = /(^|[\s>+~,(])(mark|u)(?=[\s>+~,.:[{]|$)/
 
 /**
  * Split a selector list on its TOP-LEVEL commas.
@@ -161,7 +191,7 @@ function innerWanted(body: string, classes: Set<string>, scope: string): string[
       continue
     }
     const sel = rule.slice(0, rule.indexOf('{'))
-    if (PEN_OWNED.test(sel)) continue
+    if (PEN_OWNED.test(sel) || PEN_ELEMENT.test(sel) || UNIVERSAL.test(sel)) continue
     if (RESET.test(sel.trim()) || wanted(sel, classes)) {
       out.push(scope ? scopeSelector(sel, scope) + rule.slice(rule.indexOf('{')) : rule)
     }
@@ -209,7 +239,7 @@ export function editorCss(
     if (/^@/.test(block)) continue
 
     const sel = block.slice(0, block.indexOf('{'))
-    if (PEN_OWNED.test(sel)) continue
+    if (PEN_OWNED.test(sel) || PEN_ELEMENT.test(sel) || UNIVERSAL.test(sel)) continue
     if (RESET.test(sel.trim()) || wanted(sel, classes)) {
       keep.push(scope ? scopeSelector(sel, scope) + block.slice(block.indexOf('{')) : block)
     }

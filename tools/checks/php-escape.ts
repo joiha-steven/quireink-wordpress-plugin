@@ -35,13 +35,19 @@ for (const file of files) {
   const lines = readFileSync(file, 'utf8').split('\n')
   lines.forEach((line, i) => {
     if (line.includes('phpcs:ignore')) return
-    const m = /(?:\becho\b|<\?=)(.*)$/.exec(line)
-    if (!m) return
-    const expr = m[1]!
-    // A literal string with no interpolation and no variable is not a hazard.
-    if (!/[$]|\w\s*\(/.test(expr)) return
-    if (SAFE.test(expr)) return
-    problems.push(`${file}:${i + 1}: ${line.trim().slice(0, 100)}`)
+    // ⚠️ EVERY `echo` ON THE LINE, NOT THE FIRST ONE. This read `(.*)$` from the first echo,
+    // so a line with two of them was judged on the pair together and the second hid behind the
+    // first one's escaper. Found by writing exactly that line:
+    // `class="<?php echo esc_attr( $c ); ?>"<?php echo $open; ?>`. Each statement is now read
+    // on its own, up to its `;` or its `?>`.
+    for (const m of line.matchAll(/(?:\becho\b|<\?=)([^;]*)/g)) {
+      const expr = m[1]!.split('?>')[0]!
+      // A literal string with no interpolation and no variable is not a hazard.
+      if (!/[$]|\w\s*\(/.test(expr)) continue
+      if (SAFE.test(expr)) continue
+      problems.push(`${file}:${i + 1}: ${line.trim().slice(0, 100)}`)
+      return
+    }
   })
 }
 

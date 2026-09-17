@@ -8,7 +8,6 @@
 :is(#quireink-pen-paper, body.quireink-pen-composing){--font-reading:'Literata', 'Literata Fallback', 'Literata Fallback 2', Georgia, 'Times New Roman', 'Songti SC', 'SimSun', 'Noto Serif CJK SC', 'Noto Serif SC', 'Hiragino Mincho ProN', 'Yu Mincho', 'Noto Serif CJK JP', 'Noto Serif JP', 'Nanum Myeongjo', 'Apple SD Gothic Neo', 'Noto Serif CJK KR', 'Noto Serif KR', serif;--reading-bold:600}
 
 #quireink-pen-paper,#quireink-pen-paper :host{--font-sans: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue","Noto Sans",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";--font-mono: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;--color-amber-50: oklch(98.7% 0.022 95.277);--color-amber-100: oklch(96.2% 0.059 95.617);--color-amber-300: oklch(87.9% 0.169 91.605);--color-amber-500: oklch(76.9% 0.188 70.08);--color-amber-600: oklch(66.6% 0.179 58.318);--color-amber-700: oklch(55.5% 0.163 48.998);--color-amber-800: oklch(47.3% 0.137 46.201);--color-amber-950: oklch(27.9% 0.077 45.635);--color-emerald-500: oklch(69.6% 0.17 162.48);--color-emerald-600: oklch(59.6% 0.145 163.225);--color-neutral-50: oklch(98.5% 0 none);--color-neutral-100: oklch(97% 0 none);--color-neutral-200: oklch(92.2% 0 none);--color-neutral-300: oklch(87% 0 none);--color-neutral-400: oklch(70.8% 0 none);--color-neutral-500: oklch(55.6% 0 none);--color-neutral-600: oklch(43.9% 0 none);--color-neutral-700: oklch(37.1% 0 none);--color-neutral-800: oklch(26.9% 0 none);--color-neutral-900: oklch(20.5% 0 none);--color-neutral-950: oklch(14.5% 0 none);--color-black: #000;--color-white: #fff;--spacing: 0.25rem;--container-sm: 24rem;--container-md: 28rem;--container-lg: 32rem;--container-xl: 36rem;--container-2xl: 42rem;--container-3xl: 48rem;--text-xs: 0.75rem;--text-xs--line-height: calc(1 / 0.75);--text-sm: 0.875rem;--text-sm--line-height: calc(1.25 / 0.875);--text-base: 1rem;--text-base--line-height: calc(1.5 / 1);--text-lg: 1.125rem;--text-lg--line-height: calc(1.75 / 1.125);--text-2xl: 1.5rem;--text-2xl--line-height: calc(2 / 1.5);--text-3xl: 1.875rem;--text-3xl--line-height: calc(2.25 / 1.875);--font-weight-normal: 400;--font-weight-medium: 500;--font-weight-semibold: 600;--font-weight-bold: 700;--tracking-tight: -0.025em;--tracking-wide: 0.025em;--leading-tight: 1.25;--leading-relaxed: 1.625;--radius-sm: 0.25rem;--radius-md: 0.375rem;--radius-lg: 0.5rem;--radius-2xl: 1rem;--ease-out: cubic-bezier(0,0,0.2,1);--animate-pulse: pulse 2s cubic-bezier(0.4,0,0.6,1) infinite;--blur-xl: 24px;--aspect-video: 16 / 9;--default-transition-duration: var(--dur-fast);--default-transition-timing-function: cubic-bezier(0.4,0,0.2,1);--default-font-family: var(--font-sans);--default-mono-font-family: var(--font-mono)}
-#quireink-pen-paper *,#quireink-pen-paper ::after,#quireink-pen-paper ::before,#quireink-pen-paper ::backdrop,#quireink-pen-paper ::file-selector-button{box-sizing: border-box;margin: 0;padding: 0;border: 0 solid}
 #quireink-pen-paper,#quireink-pen-paper :host{line-height: 1.5;-webkit-text-size-adjust: 100%;tab-size: 4;font-family: var(--default-font-family,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue","Noto Sans",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji");font-feature-settings: var(--default-font-feature-settings,normal);font-variation-settings: var(--default-font-variation-settings,normal);-webkit-tap-highlight-color: transparent}
 #quireink-pen-paper [hidden]:where(:not([hidden="until-found"])){display: none !important}
 #quireink-pen-paper .absolute{position: absolute}
@@ -560,71 +559,6 @@
     opacity: 0.5;
   }
 }
-@supports ((-webkit-hyphens: none) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color:rgb(from red r g b)))) {
-#quireink-pen-paper *,#quireink-pen-paper ::before,#quireink-pen-paper ::after,#quireink-pen-paper ::backdrop{
-      --u-border-spacing-x: 0;
-      --u-border-spacing-y: 0;
-      --u-translate-x: 0;
-      --u-translate-y: 0;
-      --u-translate-z: 0;
-      --u-rotate-x: initial;
-      --u-rotate-y: initial;
-      --u-rotate-z: initial;
-      --u-skew-x: initial;
-      --u-skew-y: initial;
-      --u-space-y-reverse: 0;
-      --u-divide-x-reverse: 0;
-      --u-border-style: solid;
-      --u-divide-y-reverse: 0;
-      --u-leading: initial;
-      --u-font-weight: initial;
-      --u-tracking: initial;
-      --u-ordinal: initial;
-      --u-slashed-zero: initial;
-      --u-numeric-figure: initial;
-      --u-numeric-spacing: initial;
-      --u-numeric-fraction: initial;
-      --u-shadow: 0 0 #0000;
-      --u-shadow-color: initial;
-      --u-shadow-alpha: 100%;
-      --u-inset-shadow: 0 0 #0000;
-      --u-inset-shadow-color: initial;
-      --u-inset-shadow-alpha: 100%;
-      --u-ring-color: initial;
-      --u-ring-shadow: 0 0 #0000;
-      --u-inset-ring-color: initial;
-      --u-inset-ring-shadow: 0 0 #0000;
-      --u-ring-inset: initial;
-      --u-ring-offset-width: 0px;
-      --u-ring-offset-color: #fff;
-      --u-ring-offset-shadow: 0 0 #0000;
-      --u-outline-style: solid;
-      --u-blur: initial;
-      --u-brightness: initial;
-      --u-contrast: initial;
-      --u-grayscale: initial;
-      --u-hue-rotate: initial;
-      --u-invert: initial;
-      --u-opacity: initial;
-      --u-saturate: initial;
-      --u-sepia: initial;
-      --u-drop-shadow: initial;
-      --u-drop-shadow-color: initial;
-      --u-drop-shadow-alpha: 100%;
-      --u-drop-shadow-size: initial;
-      --u-backdrop-blur: initial;
-      --u-backdrop-brightness: initial;
-      --u-backdrop-contrast: initial;
-      --u-backdrop-grayscale: initial;
-      --u-backdrop-hue-rotate: initial;
-      --u-backdrop-invert: initial;
-      --u-backdrop-opacity: initial;
-      --u-backdrop-saturate: initial;
-      --u-backdrop-sepia: initial;
-      --u-duration: initial;
-      --u-content: "";
-    }
-}
 #quireink-pen-paper /* The admin chrome: everything the utility classes in `utilities.css` do not cover.
    Served to the owner alone,#quireink-pen-paper so none of it reaches the public site.
 
@@ -704,11 +638,6 @@
 #quireink-pen-paper[data-rail-arranging='1'] #admin-rail .rail-foot-rows,#quireink-pen-paper[data-rail-arranging='1'] #admin-rail .rail-arrange-foot{display: flex}
 #quireink-pen-paper[data-rail-arranging='1'] #admin-rail .rail-arrange-foot{flex-direction: column}
 @keyframes admin-row-in{from{opacity: 0;translate: 0 4px}to{opacity: 1;translate: 0 0}}
-#quireink-pen-paper .prose mark.pen-fresh{animation: pen-draw 200ms cubic-bezier(.2,.7,.3,1) both}
-#quireink-pen-paper .prose u.pen-fresh{animation: pen-under 160ms cubic-bezier(.2,.7,.3,1) both}
-@media (prefers-reduced-motion: reduce){
-#quireink-pen-paper *,#quireink-pen-paper ::before,#quireink-pen-paper ::after{animation: none !important;transition: none !important}
-}
 #quireink-pen-paper[data-motion='off'] *,#quireink-pen-paper[data-motion='off'] ::before,#quireink-pen-paper[data-motion='off'] ::after{animation: none !important;transition: none !important}
 #quireink-pen-paper[data-daypart='morning'] [data-greet='morning'],#quireink-pen-paper[data-daypart='afternoon'] [data-greet='afternoon'],#quireink-pen-paper[data-daypart='evening'] [data-greet='evening'],#quireink-pen-paper[data-daypart='night'] [data-greet='night']{display: inline}
 #quireink-pen-paper:not([data-daypart]) [data-greet]:last-child{display: inline}
@@ -789,11 +718,22 @@
 }
 #quireink-pen-paper .prose math{color:var(--c-text)}
 #quireink-pen-paper .book-text .prose .math-block{text-indent:0}
-#quireink-pen-paper .prose mark{color:inherit;background-color:transparent;background-repeat:no-repeat;padding:0 .16em;margin:0 -.12em;-webkit-box-decoration-break:clone;box-decoration-break:clone;mix-blend-mode:multiply;background-image:var(--ink-stroke);background-size:100% var(--ink-h,1.08em);background-position:0 var(--ink-y,.47em)}
-#quireink-pen-paper .prose mark{--ink-stroke:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 34' preserveAspectRatio='none'%3E%3Cdefs%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.0067 0.191' numOctaves='3' seed='11' result='n'/%3E%3CfeColorMatrix in='n' type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2.4 -0.08800000000000001' result='a'/%3E%3CfeTurbulence type='turbulence' baseFrequency='0.0291' numOctaves='1' seed='14' result='d'/%3E%3CfeDisplacementMap in='SourceGraphic' in2='d' scale='2.07' xChannelSelector='R' yChannelSelector='G' result='s'/%3E%3CfeComposite in='s' in2='a' operator='in'/%3E%3C/filter%3E%3ClinearGradient id='g' x1='0' x2='1'%3E%3Cstop offset='0' stop-color='%23d5f856' stop-opacity='1'/%3E%3Cstop offset='0.66' stop-color='%23d5f856' stop-opacity='0.92'/%3E%3Cstop offset='1' stop-color='%23d5f856' stop-opacity='0.74'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath id='p0' d='M3.2,7.4 C10.3,4.8 17.4,6.3 24.5,5.1 C31.6,6.2 38.7,3 45.8,5.3 C52.9,2.9 60,6.1 67.1,4.7 C74.2,6.2 81.3,3.1 88.4,4 C95.5,3.3 102.6,5.8 109.7,4.7 C116.8,6.6 123.9,3.6 131,4.8 C138.1,3.1 145.2,5.4 152.3,4.7 C159.4,6.2 166.5,3.2 173.6,5.4 C180.7,3.9 187.9,6.5 195,5 C196.5,10.6 196.6,24.3 193.6,28.4 C187.9,27.4 180.7,29.1 173.6,27.9 C166.5,29.2 159.4,25.6 152.3,27.1 C145.2,25.9 138.1,28.9 131,27.1 C123.9,28.4 116.8,26 109.7,26.7 C102.6,25.2 95.5,28.8 88.4,26.5 C81.3,28.1 74.2,26 67.1,26.6 C60,25.3 52.9,28.4 45.8,26.5 C38.7,27.6 31.6,25.1 24.5,27.4 C17.4,25.8 10.3,29.2 3.2,27.8 C1.8,23.3 1.9,11.3 3.6,7.4 Z' fill='%23d5f856' opacity='.28'/%3E%3Cuse href='%23p0' fill='url(%23g)' opacity='.73' filter='url(%23f)'/%3E%3Cpath id='p2' d='M7.1,16 C18.9,15.1 30.7,16.9 42.5,15 C54.3,16.7 66.1,14.3 77.9,15.4 L77.3,25.5 C66.1,24 54.3,26.3 42.5,26 C30.7,27.1 18.9,25 7.1,26.5 Z' fill='%23d5f856' opacity='.47' filter='url(%23f)'/%3E%3Cpath id='p3' d='M88.1,13.4 C99.9,12.9 111.7,15.9 123.5,13.9 C135.3,14.7 147.1,14.4 158.9,14.4 C170.8,12.7 182.6,16.4 194.4,15.6 L193.8,25.5 C182.6,24.6 170.8,27.1 158.9,24.9 C147.1,27.2 135.3,24.1 123.5,24.2 C111.7,23.7 99.9,25.3 88.1,24 Z' fill='%23d5f856' opacity='.47' filter='url(%23f)'/%3E%3Cpath id='p4' d='M19.7,5.9 C35.7,4.7 51.8,5.6 67.8,5.3 C83.9,5.8 99.9,4.4 116,4.8 L115.6,7.2 C99.9,6.5 83.9,7.9 67.8,7.5 C51.8,8.2 35.7,7.3 19.7,7.8 Z' fill='%23d5f856' opacity='.14' filter='url(%23f)'/%3E%3C/svg%3E")}
-#quireink-pen-paper .dark .prose mark{mix-blend-mode:normal;color:var(--c-heading)}
-#quireink-pen-paper .dark .prose mark{--ink-stroke:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 34' preserveAspectRatio='none'%3E%3Cdefs%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.0067 0.191' numOctaves='3' seed='11' result='n'/%3E%3CfeColorMatrix in='n' type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2.4 -0.08800000000000001' result='a'/%3E%3CfeTurbulence type='turbulence' baseFrequency='0.0291' numOctaves='1' seed='14' result='d'/%3E%3CfeDisplacementMap in='SourceGraphic' in2='d' scale='2.07' xChannelSelector='R' yChannelSelector='G' result='s'/%3E%3CfeComposite in='s' in2='a' operator='in'/%3E%3C/filter%3E%3ClinearGradient id='g' x1='0' x2='1'%3E%3Cstop offset='0' stop-color='%237e7028' stop-opacity='1'/%3E%3Cstop offset='0.66' stop-color='%237e7028' stop-opacity='0.92'/%3E%3Cstop offset='1' stop-color='%237e7028' stop-opacity='0.74'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath id='p0' d='M3.2,7.4 C10.3,4.8 17.4,6.3 24.5,5.1 C31.6,6.2 38.7,3 45.8,5.3 C52.9,2.9 60,6.1 67.1,4.7 C74.2,6.2 81.3,3.1 88.4,4 C95.5,3.3 102.6,5.8 109.7,4.7 C116.8,6.6 123.9,3.6 131,4.8 C138.1,3.1 145.2,5.4 152.3,4.7 C159.4,6.2 166.5,3.2 173.6,5.4 C180.7,3.9 187.9,6.5 195,5 C196.5,10.6 196.6,24.3 193.6,28.4 C187.9,27.4 180.7,29.1 173.6,27.9 C166.5,29.2 159.4,25.6 152.3,27.1 C145.2,25.9 138.1,28.9 131,27.1 C123.9,28.4 116.8,26 109.7,26.7 C102.6,25.2 95.5,28.8 88.4,26.5 C81.3,28.1 74.2,26 67.1,26.6 C60,25.3 52.9,28.4 45.8,26.5 C38.7,27.6 31.6,25.1 24.5,27.4 C17.4,25.8 10.3,29.2 3.2,27.8 C1.8,23.3 1.9,11.3 3.6,7.4 Z' fill='%237e7028' opacity='.28'/%3E%3Cuse href='%23p0' fill='url(%23g)' opacity='.73' filter='url(%23f)'/%3E%3Cpath id='p2' d='M7.1,16 C18.9,15.1 30.7,16.9 42.5,15 C54.3,16.7 66.1,14.3 77.9,15.4 L77.3,25.5 C66.1,24 54.3,26.3 42.5,26 C30.7,27.1 18.9,25 7.1,26.5 Z' fill='%237e7028' opacity='.47' filter='url(%23f)'/%3E%3Cpath id='p3' d='M88.1,13.4 C99.9,12.9 111.7,15.9 123.5,13.9 C135.3,14.7 147.1,14.4 158.9,14.4 C170.8,12.7 182.6,16.4 194.4,15.6 L193.8,25.5 C182.6,24.6 170.8,27.1 158.9,24.9 C147.1,27.2 135.3,24.1 123.5,24.2 C111.7,23.7 99.9,25.3 88.1,24 Z' fill='%237e7028' opacity='.47' filter='url(%23f)'/%3E%3Cpath id='p4' d='M19.7,5.9 C35.7,4.7 51.8,5.6 67.8,5.3 C83.9,5.8 99.9,4.4 116,4.8 L115.6,7.2 C99.9,6.5 83.9,7.9 67.8,7.5 C51.8,8.2 35.7,7.3 19.7,7.8 Z' fill='%237e7028' opacity='.14' filter='url(%23f)'/%3E%3C/svg%3E")}
-#quireink-pen-paper .prose u{text-decoration:none;background-color:transparent;background-repeat:no-repeat;-webkit-box-decoration-break:clone;box-decoration-break:clone;mix-blend-mode:multiply;padding-bottom:.4em;background-image:var(--u-stroke);background-size:100% var(--u-h,.39em);background-position:0 var(--u-y,1.07em)}
-#quireink-pen-paper .prose u{--u-stroke:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 20' preserveAspectRatio='none'%3E%3Cdefs%3E%3Cfilter id='f'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.049' numOctaves='1' seed='44' result='d'/%3E%3CfeDisplacementMap in='SourceGraphic' in2='d' scale='1.01' xChannelSelector='R' yChannelSelector='G' result='s'/%3E%3C/filter%3E%3C/defs%3E%3Cpath id='p0' d='M2.1,4.7 L14.4,5.2 L26.7,5.7 L39,6.4 L51.3,6.6 L63.6,6.9 L75.9,7.2 L88.2,7.4 L100.5,7.4 L112.8,7.6 L125.1,7.4 L137.4,7.3 L149.7,7.3 L162,7.4 L174.3,7.2 L186.6,6.7 L198.8,6.2 L198.8,8.4 L186.6,9.1 L174.3,10 L162,10.5 L149.7,10.6 L137.4,11 L125.1,11.3 L112.8,11.6 L100.5,11.5 L88.2,11.4 L75.9,11.1 L63.6,10.6 L51.3,9.9 L39,9.5 L26.7,8.6 L14.4,7.9 L2.1,7.3 Z' fill='%235b574f' opacity='.91' filter='url(%23f)'/%3E%3Cpath id='p1' d='M26,6.1 C52.9,6.6 79.8,8.4 106.8,8 C133.7,8.5 160.7,7.3 187.6,6.5 L187.1,8.7 C160.7,9.2 133.7,10.5 106.8,10.2 C79.8,10 52.9,8.6 26,8.1 Z' fill='%235b574f' opacity='.78' filter='url(%23f)'/%3E%3C/svg%3E")}
-#quireink-pen-paper .dark .prose u{mix-blend-mode:normal}
-#quireink-pen-paper .dark .prose u{--u-stroke:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 20' preserveAspectRatio='none'%3E%3Cdefs%3E%3Cfilter id='f'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.049' numOctaves='1' seed='44' result='d'/%3E%3CfeDisplacementMap in='SourceGraphic' in2='d' scale='1.01' xChannelSelector='R' yChannelSelector='G' result='s'/%3E%3C/filter%3E%3C/defs%3E%3Cpath id='p0' d='M2.1,4.7 L14.4,5.2 L26.7,5.7 L39,6.4 L51.3,6.6 L63.6,6.9 L75.9,7.2 L88.2,7.4 L100.5,7.4 L112.8,7.6 L125.1,7.4 L137.4,7.3 L149.7,7.3 L162,7.4 L174.3,7.2 L186.6,6.7 L198.8,6.2 L198.8,8.4 L186.6,9.1 L174.3,10 L162,10.5 L149.7,10.6 L137.4,11 L125.1,11.3 L112.8,11.6 L100.5,11.5 L88.2,11.4 L75.9,11.1 L63.6,10.6 L51.3,9.9 L39,9.5 L26.7,8.6 L14.4,7.9 L2.1,7.3 Z' fill='%238f8a80' opacity='.91' filter='url(%23f)'/%3E%3Cpath id='p1' d='M26,6.1 C52.9,6.6 79.8,8.4 106.8,8 C133.7,8.5 160.7,7.3 187.6,6.5 L187.1,8.7 C160.7,9.2 133.7,10.5 106.8,10.2 C79.8,10 52.9,8.6 26,8.1 Z' fill='%238f8a80' opacity='.78' filter='url(%23f)'/%3E%3C/svg%3E")}
+/* Declarations the rules above read, carried over so they are not silent. */
+#quireink-pen-paper {
+  --u-backdrop-brightness: initial;
+  --u-backdrop-contrast: initial;
+  --u-backdrop-grayscale: initial;
+  --u-backdrop-hue-rotate: initial;
+  --u-backdrop-invert: initial;
+  --u-backdrop-opacity: initial;
+  --u-backdrop-saturate: initial;
+  --u-backdrop-sepia: initial;
+  --u-border-style: dashed;
+  --u-inset-ring-shadow: 0 0 #0000;
+  --u-inset-shadow: 0 0 #0000;
+  --u-ring-inset: inset;
+  --u-ring-offset-shadow: 0 0 #0000;
+  --u-ring-offset-width: 0px;
+  --u-shadow-color: initial;
+  --u-translate-x: calc(var(--spacing) * -1);
+}

@@ -4,8 +4,9 @@ The [Quire Ink](https://quireink.com) pen as a WordPress plugin. `quire-ink-pen/
 plugin; everything else exists to generate it, run it, or explain it.
 
 Three gestures a WordPress author cannot otherwise make: a highlight, an underline and a ring,
-drawn as hand strokes rather than rectangles. 80 stroke variants, dealt by hashing the marked
-words, so no two marks on a page are the same shape.
+drawn as hand strokes rather than rectangles. 80 stroke variants, dealt by hashing the
+gesture's own Markdown source (`==a phrase==`, fences and all), so no two marks on a page are
+the same shape.
 
 **GNU GPL v2 or later** ([ADR 0005](./docs/decisions/0005-gpl-v2-or-later.md)) — what
 wordpress.org requires, and the reason the ink sheet is generated rather than reasoned about:
@@ -82,7 +83,7 @@ is the only way to see the pairing work.
 | Marks look right in the editor, wrong on the page | `inc/enqueue.php` — the front end enqueues conditionally |
 | Marks look right on the page, wrong in the editor | `inc/editor.php` — the editor takes the same sheet unconditionally |
 | A mark loses its `data-pen` on save | `docs/gaps.md`, `wp_kses` — a contributor's HTML is filtered |
-| The same words got a different stroke | `assets/js/seed.js` — the hash is the engine's, published in its `docs/pen.md` |
+| The same words got a different stroke | `assets/js/seed.js` — the hash is of the GESTURE'S SOURCE, `==x==` and not `x`; `check:contract` probes the 28-character boundary |
 | Nothing is styled although the markup is right | the `pen` class on `<body>`; `inc/enqueue.php` adds it |
 | The toolbar is unstyled, or a bar will not hide | `tools/editor-css.ts` — the subset cut from the engine's Tailwind build |
 | The writing screen is blank, or throws | `quire-ink-pen/assets/js/app.js`, then `inc/compose.php` |
@@ -111,9 +112,11 @@ is the only way to see the pairing work.
 - **The markup is not ours.** `<mark data-pen>`, `<u data-pen>`, `<mark data-form="o">` belong
   to the engine's `docs/pen.md` (ADR 0048). Emit exactly that; inventing an attribute means one
   stylesheet stops drawing both surfaces.
-- **One implementation of the seed hash.** It decides which of 80 strokes a mark gets, and the
-  engine's own scar tissue is about exactly this: four parsers once spelled one regex out
-  separately and two drifted within the hour.
+- **One implementation of the seed hash, AND ONE ARGUMENT.** It decides which of 80 strokes a
+  mark gets. The engine hashes `node.raw` — the gesture's whole Markdown source, fences and
+  `#colour` included — and folds it by the length of what is INSIDE the fences. `formats.js`
+  hashed the bare text for a release: same function, same fixtures, and a different stroke for
+  every real mark. The block editor drew variant 71 where the Quire Ink editor drew 43.
 - **Everything printed is escaped** at the point of printing. `phpcs:ignore` needs a reason.
 - **Everything global is prefixed `quireink_`.** A plugin shares a namespace with every other
   plugin and the theme.
